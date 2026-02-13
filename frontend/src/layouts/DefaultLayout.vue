@@ -1,16 +1,13 @@
 <template>
   <el-container>
-    <el-aside :width="isCollapse ? '64px' : '220px'">
+    <el-aside :width="isCollapse ? '72px' : '256px'">
       <div class="logo">
+        <el-icon :size="24" color="#1a73e8" style="margin-right: 8px;"><ElementPlus /></el-icon>
         <span v-if="!isCollapse">ChangYe Research</span>
-        <span v-else>CY</span>
       </div>
       <el-menu
-        active-text-color="#409EFF"
-        background-color="#16213e"
+        :default-active="activePath"
         class="el-menu-vertical-demo"
-        default-active="/"
-        text-color="#fff"
         :collapse="isCollapse"
         router
       >
@@ -18,22 +15,26 @@
           <el-icon><HomeFilled /></el-icon>
           <template #title>首页</template>
         </el-menu-item>
-        <el-menu-item index="/papers" disabled>
+        <el-menu-item index="/papers">
           <el-icon><Document /></el-icon>
-          <template #title>论文管理 (Phase 1)</template>
+          <template #title>论文管理</template>
+        </el-menu-item>
+        <el-menu-item index="/tags">
+          <el-icon><CollectionTag /></el-icon>
+          <template #title>标签管理</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
       <el-header>
         <div class="header-left">
-          <el-button @click="toggleCollapse" text>
-            <el-icon :size="20"><Fold v-if="!isCollapse" /><Expand v-else /></el-icon>
+          <el-button @click="toggleCollapse" text circle>
+            <el-icon :size="20" color="#5f6368"><Fold v-if="!isCollapse" /><Expand v-else /></el-icon>
           </el-button>
-          <span style="margin-left: 10px; font-weight: 600;">ChangYe 科研工具台</span>
+          <span style="margin-left: 16px; font-size: 18px; color: #5f6368;">科研工具台</span>
         </div>
         <div class="header-right">
-          <!-- User info or actions could go here -->
+          <el-avatar :size="32" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
         </div>
       </el-header>
       <el-main>
@@ -44,10 +45,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { HomeFilled, Document, Fold, Expand } from '@element-plus/icons-vue'
+import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { HomeFilled, Document, CollectionTag, Fold, Expand, ElementPlus } from '@element-plus/icons-vue'
 
 const isCollapse = ref(false)
+const route = useRoute()
+
+const activePath = computed(() => route.path)
+
 const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value
 }
@@ -55,7 +61,10 @@ const toggleCollapse = () => {
 
 <style scoped>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 220px;
-  min-height: 400px;
+  width: 256px;
+}
+.header-left {
+  display: flex;
+  align-items: center;
 }
 </style>

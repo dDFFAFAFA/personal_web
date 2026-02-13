@@ -29,20 +29,21 @@
 
 ---
 
-### 🎨 Gemini (前端) — ⏳ 待确认
+### 🎨 Gemini (前端) — ✅ 已完成
 
-**完成时间**: 待反馈
+**完成时间**: 2026-02-13 21:00
 
 **已完成工作**:
-- [ ] Vue 3 + Vite 项目初始化
-- [ ] Element Plus 集成
-- [ ] 路由配置
-- [ ] DefaultLayout 布局
-- [ ] 首页 + Health 状态展示
-- [ ] Axios 封装
-- [ ] Dockerfile
+- [x] Vue 3 + Vite 项目初始化
+- [x] Element Plus 集成
+- [x] 路由配置
+- [x] DefaultLayout 布局
+- [x] 首页 + Health 状态展示
+- [x] Axios 封装
+- [x] Dockerfile
 
-**问题/偏离**: 待反馈
+**问题/偏离**:
+- 无
 
 ---
 
@@ -61,7 +62,29 @@
 
 ## Phase 1: 论文管理
 
-> 待 Phase 0 完成后填写。
+### 🎨 Gemini (前端) — ✅ 已完成
+
+**完成时间**: 2026-02-13 21:15
+
+**已完成工作**:
+- [x] 安装 `md-editor-v3`
+- [x] 定义 TypeScript 类型 (`types/paper.ts`, `types/enums.ts`)
+- [x] 实现 API 封装与 Mock 数据 (`api/paper.ts`, `api/note.ts`, `api/tag.ts`)
+- [x] 实现 Pinia Store (`paperStore`, `tagStore`)
+- [x] 更新全局样式与布局 (Google AI Studio 风格)
+- [x] 论文列表页 (筛选、分页、上传弹窗)
+- [x] 论文详情页 (元数据、笔记列表)
+- [x] 笔记编辑页 (Markdown 编辑器)
+- [x] 标签管理页 (CRUD)
+- [x] 路由更新
+
+**运行结果**:
+- `npm run build`: 成功 (Time: 3.96s)
+- 所有页面均通过 Mock 数据测试
+
+**建议**:
+- 由于 `md-editor-v3` 较大，建议后续开启路由懒加载拆分 chunk。
+
 
 ---
 
