@@ -30,7 +30,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -92,8 +91,6 @@ class PaperServiceTest {
             }
             return saved;
         });
-        when(tagRepository.findAllById(anyList())).thenReturn(List.of());
-
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "paper.pdf",

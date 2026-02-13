@@ -2,7 +2,7 @@ import request from './request'
 import type { ApiResponse } from '../types/api'
 import type { Tag } from '../types/paper'
 
-const USE_MOCK = true
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 const mockTags: Tag[] = [
   { id: 1, name: 'NLP', color: '#409EFF', paperCount: 12, createdAt: '2026-02-13T00:00:00+08:00' },

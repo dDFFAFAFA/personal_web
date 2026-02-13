@@ -2,7 +2,7 @@ import request from './request'
 import type { ApiResponse, PageResponse } from '../types/api'
 import type { Paper, PaperFilter } from '../types/paper'
 
-const USE_MOCK = true
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 // Initial mock data
 const mockPapers: Paper[] = [

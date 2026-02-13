@@ -6,7 +6,7 @@ spring:
     name: personal-web
 
   profiles:
-    active: dev
+    default: dev
 
   jpa:
     open-in-view: false

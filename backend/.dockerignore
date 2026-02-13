@@ -1,0 +1,7 @@
+**/.DS_Store
+**/.git
+**/.vscode
+target
+*.log
+logs
+uploads

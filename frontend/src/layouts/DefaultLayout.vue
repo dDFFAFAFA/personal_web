@@ -2,7 +2,7 @@
   <el-container>
     <el-aside :width="isCollapse ? '72px' : '256px'">
       <div class="logo">
-        <el-icon :size="24" color="#1a73e8" style="margin-right: 8px;"><ElementPlus /></el-icon>
+        <img src="../assets/logo.jpg" alt="Logo" class="logo-img" />
         <span v-if="!isCollapse">ChangYe Research</span>
       </div>
       <el-menu
@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { HomeFilled, Document, CollectionTag, Fold, Expand, ElementPlus, Moon, Sunny } from '@element-plus/icons-vue'
+import { HomeFilled, Document, CollectionTag, Fold, Expand, Moon, Sunny } from '@element-plus/icons-vue'
 import { useTheme } from '../composables/useTheme'
 
 const isCollapse = ref(false)
@@ -75,5 +75,12 @@ const toggleCollapse = () => {
 .header-left {
   display: flex;
   align-items: center;
+}
+.logo-img {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 </style>

@@ -29,6 +29,7 @@ public class Paper {
     @Column(columnDefinition = "TEXT")
     private String authors; // JSON array string, e.g. ["Author A", "Author B"]
 
+    @Column(name = "publish_year")
     private Integer year;
 
     private String venue;
@@ -56,11 +57,7 @@ public class Paper {
     private String abstractText;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "paper_tags",
-            joinColumns = @JoinColumn(name = "paper_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+    @JoinTable(name = "paper_tags", joinColumns = @JoinColumn(name = "paper_id", foreignKey = @ForeignKey(name = "fk_paper_tags_paper")), inverseJoinColumns = @JoinColumn(name = "tag_id", foreignKey = @ForeignKey(name = "fk_paper_tags_tag")))
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
 

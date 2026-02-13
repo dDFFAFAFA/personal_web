@@ -1,0 +1,8 @@
+**/.DS_Store
+**/.git
+**/.vscode
+node_modules
+dist
+dist-ssr
+*.log
+logs
