@@ -19,7 +19,7 @@ instance.interceptors.response.use(
       ElMessage.error(res.message || 'Error')
       return Promise.reject(new Error(res.message || 'Error'))
     }
-    return res
+    return res as any
   },
   (error) => {
     console.error('err' + error) // for debug
