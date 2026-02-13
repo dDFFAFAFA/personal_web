@@ -85,6 +85,19 @@
 **建议**:
 - 由于 `md-editor-v3` 较大，建议后续开启路由懒加载拆分 chunk。
 
+### 🎨 Gemini (前端) — ✅ 已完成
+
+**完成时间**: 2026-02-13 21:30
+
+**已完成工作**:
+- [x] 添加深色模式支持 (Google AI Studio Dark Style)
+- [x] 实现 `useTheme` Composable (支持 localStorage 持久化)
+- [x] 更新 `DefaultLayout` 添加日/夜切换按钮
+- [x] 适配 Element Plus 深色主题变量
+
+**运行结果**:
+- `npm run build`: 成功
+
 
 ---
 

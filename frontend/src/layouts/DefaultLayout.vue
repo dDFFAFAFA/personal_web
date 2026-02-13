@@ -34,6 +34,13 @@
           <span style="margin-left: 16px; font-size: 18px; color: #5f6368;">科研工具台</span>
         </div>
         <div class="header-right">
+          <el-button 
+            :icon="theme === 'dark' ? Sunny : Moon" 
+            circle 
+            text 
+            @click="toggleTheme" 
+            style="margin-right: 12px;"
+          />
           <el-avatar :size="32" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
         </div>
       </el-header>
@@ -47,10 +54,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { HomeFilled, Document, CollectionTag, Fold, Expand, ElementPlus } from '@element-plus/icons-vue'
+import { HomeFilled, Document, CollectionTag, Fold, Expand, ElementPlus, Moon, Sunny } from '@element-plus/icons-vue'
+import { useTheme } from '../composables/useTheme'
 
 const isCollapse = ref(false)
 const route = useRoute()
+const { theme, toggleTheme } = useTheme()
 
 const activePath = computed(() => route.path)
 
