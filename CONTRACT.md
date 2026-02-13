@@ -375,18 +375,65 @@ instance.interceptors.response.use(
 
 ## 7. 沟通协议
 
-### 7.1 需要向 Antigravity 请求的事项
+### 7.1 任务报告机制 (TASK_REPORT.md)
 
+> [!IMPORTANT]  
+> 所有 Agent 完成任务后，**必须将报告写入 `docs/TASK_REPORT.md`**，而不是口头汇报。  
+> 用户只需通知 Antigravity "Agent 干完了"，Antigravity 会自动查看报告文件。
+
+**工作流**:
+
+```
+1. Antigravity 下发任务 → 给出提示词
+2. 用户分别给 Codex / Gemini 执行
+3. Codex / Gemini 完成后 → 将报告写入 docs/TASK_REPORT.md
+4. 用户通知 Antigravity: "他们干完了"
+5. Antigravity 自动读取 TASK_REPORT.md → 审查 → 补齐 → 集成
+```
+
+**Agent 报告格式** (写入 `docs/TASK_REPORT.md` 对应 Phase 区域):
+
+```markdown
+### [emoji] [Agent] — [状态: ✅已完成 / ⚠️部分完成 / ❌失败]
+
+**完成时间**: YYYY-MM-DD HH:MM
+
+**已完成工作**:
+- [x] 工作项 1
+- [x] 工作项 2
+
+**运行结果**:
+- `mvn test` 或 `npm run build` 输出摘要（成功/失败/错误数）
+
+**问题/偏离**:
+- Ownership blocker: 无法创建 xxx（需 Antigravity 补齐）
+- 其他问题描述
+
+**建议**:
+- 对后续开发的建议
+
+**新增/修改文件列表**:
+- `path/to/file1`
+- `path/to/file2`
+```
+
+### 7.2 需要向 Antigravity 请求的事项
+
+在报告的 "问题/偏离" 中注明以下类型的请求：
 - 修改 API 契约
 - 修改数据模型 / DTO
 - 新增数据库表
+- 修改配置类
 - 修改 Docker 配置
 - 跨模块依赖变更
 
-### 7.2 任务完成报告
+### 7.3 给 Agent 的提示词模板
 
-每个 Agent 完成任务后，需提供：
-1. ✅ 已完成的工作清单
-2. ⚠️ 遇到的问题或偏离契约的地方
-3. 💡 对后续开发的建议
-4. 📝 新增/修改的文件列表
+在任务提示词末尾**必须附带以下指令**:
+
+```
+### 完成后的报告要求
+任务完成后，请将你的工作报告追加到 `docs/TASK_REPORT.md` 文件中对应的 Phase 区域。
+请按照文件底部的报告模板格式填写，包括：完成的工作清单、运行结果、遇到的问题、建议、文件列表。
+```
+
