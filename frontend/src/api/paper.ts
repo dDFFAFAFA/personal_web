@@ -1,6 +1,12 @@
 import request from './request'
 import type { ApiResponse, PageResponse } from '../types/api'
-import type { Paper, PaperFilter } from '../types/paper'
+import type {
+  HomeSummaryItem,
+  Paper,
+  PaperFilter,
+  PaperRepoLinkListResponse,
+  PaperSummary
+} from '../types/paper'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
@@ -196,3 +202,39 @@ export const getPaperBackupStatus = (id: number) =>
 
 export const restorePaperFromOss = (id: number) =>
   request.post<any, ApiResponse<PaperBackupStatus>>(`/papers/${id}/restore`)
+
+export interface GeneratePaperSummaryRequest {
+  provider?: string
+  forceRegenerate?: boolean
+}
+
+export interface ApplyRepoLinksRequest {
+  candidateIds: number[]
+  autoRebuildReadme?: boolean
+}
+
+export const getHomeSummaries = (limit = 10) =>
+  request.get<any, ApiResponse<HomeSummaryItem[]>>('/home/summaries', {
+    params: { limit }
+  })
+
+export const generatePaperSummary = (id: number, payload: GeneratePaperSummaryRequest = {}) =>
+  request.post<any, ApiResponse<PaperSummary>>(`/papers/${id}/summary/generate`, payload)
+
+export const getPaperSummary = (id: number) =>
+  request.get<any, ApiResponse<PaperSummary>>(`/papers/${id}/summary`)
+
+export const downloadPaperSummary = (id: number) =>
+  request.get<any, Blob>(`/papers/${id}/summary/download`, {
+    responseType: 'blob',
+    timeout: 30000
+  })
+
+export const extractPaperRepoLinks = (id: number) =>
+  request.post<any, ApiResponse<PaperRepoLinkListResponse>>(`/papers/${id}/repo-links/extract`)
+
+export const getPaperRepoLinks = (id: number) =>
+  request.get<any, ApiResponse<PaperRepoLinkListResponse>>(`/papers/${id}/repo-links`)
+
+export const applyPaperRepoLinks = (id: number, payload: ApplyRepoLinksRequest) =>
+  request.post<any, ApiResponse<PaperRepoLinkListResponse>>(`/papers/${id}/repo-links/apply`, payload)
