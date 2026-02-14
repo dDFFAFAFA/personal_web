@@ -8,5 +8,6 @@ RUN mvn -B -DskipTests clean package
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar /app/app.jar
+RUN mkdir -p /app/uploads/papers
 EXPOSE 8080
 ENTRYPOINT ["java", "-Xmx384m", "-Xms128m", "-jar", "/app/app.jar"]
