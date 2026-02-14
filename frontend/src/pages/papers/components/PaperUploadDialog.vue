@@ -17,12 +17,24 @@
           accept=".pdf"
           :on-change="handleFileChange"
           :on-remove="handleFileRemove"
+          :file-list="fileList"
         >
           <el-icon class="el-icon--upload"><upload-filled /></el-icon>
           <div class="el-upload__text">
             拖拽文件到此处或 <em>点击上传</em>
           </div>
         </el-upload>
+      </el-form-item>
+
+      <el-divider content-position="center">元数据信息</el-divider>
+
+      <el-form-item label="DOI (智能填充)" prop="doi">
+        <div style="display: flex; width: 100%; gap: 10px;">
+          <el-input v-model="form.doi" placeholder="10.xxxx/xxxxx" clearable @clear="handleDoiClear" />
+          <el-button type="primary" :loading="enrichLoading" @click="handleSmartFill" :icon="MagicStick">
+            自动填充
+          </el-button>
+        </div>
       </el-form-item>
 
       <el-form-item label="标题" prop="title">
@@ -43,14 +55,29 @@
       </el-row>
 
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="会议/期刊" prop="venue">
             <el-input v-model="form.venue" placeholder="e.g. CVPR" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
-          <el-form-item label="DOI" prop="doi">
-            <el-input v-model="form.doi" placeholder="10.xxxx/..." />
+        <el-col :span="8">
+          <el-form-item label="CCF 等级">
+            <el-select v-model="form.ccfRank" placeholder="选择等级" clearable>
+              <el-option label="CCF-A" value="A" />
+              <el-option label="CCF-B" value="B" />
+              <el-option label="CCF-C" value="C" />
+              <el-option label="None" value="N" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+           <el-form-item label="JCR 分区">
+            <el-select v-model="form.jcrQuartile" placeholder="选择分区" clearable>
+              <el-option label="Q1" value="Q1" />
+              <el-option label="Q2" value="Q2" />
+              <el-option label="Q3" value="Q3" />
+              <el-option label="Q4" value="Q4" />
+            </el-select>
           </el-form-item>
         </el-col>
       </el-row>
@@ -58,9 +85,8 @@
       <el-form-item label="摘要" prop="abstractText">
         <el-input v-model="form.abstractText" type="textarea" rows="3" />
       </el-form-item>
-      
-      <!-- Tags selection could go here, omitting for brevity in Phase 1 start -->
     </el-form>
+
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="visible = false">取消</el-button>
@@ -74,9 +100,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { UploadFilled } from '@element-plus/icons-vue'
+import { UploadFilled, MagicStick } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type UploadFile } from 'element-plus'
 import { createPaper } from '../../../api/paper'
+import { enrichByDoi, enrichByTitle } from '../../../api/metadata'
 
 const props = defineProps<{
   modelValue: boolean
@@ -91,7 +118,8 @@ const visible = computed({
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
-const fileList = ref<File[]>([])
+const enrichLoading = ref(false)
+const fileList = ref<UploadFile[]>([])
 
 const form = reactive({
   title: '',
@@ -99,7 +127,9 @@ const form = reactive({
   year: new Date().getFullYear(),
   venue: '',
   doi: '',
-  abstractText: ''
+  abstractText: '',
+  ccfRank: '',
+  jcrQuartile: ''
 })
 
 const rules = {
@@ -112,7 +142,7 @@ const rules = {
 
 const handleFileChange = (uploadFile: UploadFile) => {
   if (uploadFile.raw) {
-    fileList.value = [uploadFile.raw]
+    fileList.value = [uploadFile]
     // Auto-fill title from filename if empty
     if (!form.title && uploadFile.name) {
       form.title = uploadFile.name.replace('.pdf', '')
@@ -124,14 +154,50 @@ const handleFileRemove = () => {
   fileList.value = []
 }
 
+const handleDoiClear = () => {
+  // Optional: clear other fields? No.
+}
+
+const handleSmartFill = async () => {
+  enrichLoading.value = true
+  try {
+    let res
+    if (form.doi) {
+      res = await enrichByDoi(form.doi)
+    } else if (form.title) {
+      res = await enrichByTitle(form.title)
+    } else {
+      ElMessage.warning('请填写 DOI 或标题以进行自动填充')
+      return
+    }
+
+    if (res && res.code === 200) {
+      const data = res.data
+      form.title = data.title || form.title
+      form.authorsStr = data.authors ? data.authors.join(', ') : form.authorsStr
+      form.year = data.year || form.year
+      form.venue = data.venue || form.venue
+      form.doi = data.doi || form.doi
+      form.abstractText = data.abstractText || form.abstractText
+      form.ccfRank = data.ccfRank || form.ccfRank
+      form.jcrQuartile = data.jcrQuartile || form.jcrQuartile
+      ElMessage.success('元数据填充成功')
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    enrichLoading.value = false
+  }
+}
+
 const submitUpload = async () => {
   if (!formRef.value) return
   await formRef.value.validate(async (valid) => {
-    if (valid && fileList.value[0]) {
+    if (valid && fileList.value.length > 0 && fileList.value[0]?.raw) {
       loading.value = true
       try {
         const formData = new FormData()
-        formData.append('file', fileList.value[0])
+        formData.append('file', fileList.value[0]!.raw!)
         formData.append('title', form.title)
         
         const authors = form.authorsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean)
@@ -141,6 +207,8 @@ const submitUpload = async () => {
         if (form.venue) formData.append('venue', form.venue)
         if (form.doi) formData.append('doi', form.doi)
         if (form.abstractText) formData.append('abstractText', form.abstractText)
+        if (form.ccfRank) formData.append('ccfRank', form.ccfRank)
+        if (form.jcrQuartile) formData.append('jcrQuartile', form.jcrQuartile)
 
         const res = await createPaper(formData)
         if (res.code === 200) {
@@ -150,6 +218,8 @@ const submitUpload = async () => {
           // Reset
           formRef.value?.resetFields()
           fileList.value = []
+          form.ccfRank = ''
+          form.jcrQuartile = ''
         }
       } catch (error) {
         console.error(error)

@@ -44,6 +44,9 @@ class PaperServiceTest {
     @Mock
     private TagRepository tagRepository;
 
+    @Mock
+    private VenueRankingService venueRankingService;
+
     private PaperService paperService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -53,7 +56,7 @@ class PaperServiceTest {
 
     @BeforeEach
     void setUp() {
-        paperService = new PaperService(paperRepository, noteRepository, tagRepository, objectMapper);
+        paperService = new PaperService(paperRepository, noteRepository, tagRepository, objectMapper, venueRankingService);
         ReflectionTestUtils.setField(paperService, "uploadPath", tempDir.toString());
     }
 

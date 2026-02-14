@@ -15,7 +15,8 @@ export const usePaperStore = defineStore('paper', () => {
     status: undefined,
     tagId: undefined,
     starred: undefined,
-    keyword: ''
+    keyword: '',
+    ccfRank: undefined
   })
 
   const fetchPapers = async () => {

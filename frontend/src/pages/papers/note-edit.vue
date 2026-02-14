@@ -17,7 +17,17 @@
     </div>
 
     <div class="editor-wrapper">
-      <MdEditor v-model="content" @onSave="handleSave" />
+      <MdEditor 
+        v-model="content" 
+        :theme="theme as any"
+        previewTheme="github"
+        codeTheme="a11y"
+        :showCodeRowNumber="true"
+        :noKatex="false"
+        :noMermaid="false"
+        :markdownItPlugins="markdownItPlugins"
+        @onSave="handleSave" 
+      />
     </div>
   </div>
 </template>
@@ -27,16 +37,25 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
+// @ts-ignore
+import markdownItMark from 'markdown-it-mark'
 import { getPaperNotes, updateNote } from '../../api/note'
+import { useTheme } from '../../composables/useTheme'
 
 const route = useRoute()
 const paperId = Number(route.params.id)
 const noteId = Number(route.params.noteId)
 
+const { theme } = useTheme()
+
 const title = ref('')
 const content = ref('')
 const statusText = ref('')
 let saveTimer: any = null
+
+const markdownItPlugins = (md: any) => {
+  md.use(markdownItMark)
+}
 
 const fetchData = async () => {
   try {
@@ -80,6 +99,18 @@ onMounted(() => {
 </script>
 
 <style scoped>
+:deep(mark) {
+  background-color: #fff3bf;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  color: #000;
+}
+
+:deep(.dark mark) {
+  background-color: #5c4d1a;
+  color: #e5e7eb;
+}
+
 .note-edit-container {
   height: calc(100vh - 80px); /* Adjust for header/padding */
   display: flex;

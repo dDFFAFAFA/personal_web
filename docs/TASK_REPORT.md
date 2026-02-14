@@ -98,6 +98,29 @@
 **运行结果**:
 - `npm run build`: 成功
 
+---
+
+## Phase 2: 功能增强
+
+### 🎨 Antigravity (Frontend) — ✅ 已完成
+
+**完成时间**: 2026-02-14 12:00
+
+**已完成工作**:
+- [x] **元数据增强**: 增加 DOI 智能填充、CCF 等级标签 (A/B/C)、引用数显示、JCR 分区。更新了 `PaperUploadDialog`, `index.vue`, `detail.vue`。
+- [x] **Markdown 编辑器升级**: 集成 `markdown-it-mark` 实现高亮语法 (`==text==`)，配置深色/浅色代码主题，优化样式。
+- [x] **BibTeX/RIS 支持**: 实现导入导出功能 (列表页批量导出/导入，详情页复制 BibTeX)。
+- [x] **PDF 预览**: 集成 `vue-pdf-embed` 实现 PDF 在线阅读 (缩放、翻页、深色模式适配)。
+- [x] **API 服务**: 创建 `api/metadata.ts` 和 `api/importExport.ts`。
+
+**问题/偏离**:
+- 假设后端 API 已就绪，前端直接对接接口。
+
+**运行结果**:
+- 代码逻辑已实现，等待联调。
+
+**建议**:
+- 确保后端实现 `/papers/enrich/*`, `/papers/import`, `/papers/export` 接口。
 
 ---
 

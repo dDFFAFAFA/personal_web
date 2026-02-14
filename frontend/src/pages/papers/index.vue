@@ -9,13 +9,13 @@
           prefix-icon="Search"
           clearable
           @change="handleSearch"
-          style="width: 240px"
+          style="width: 200px"
         />
         <el-select
           v-model="paperStore.filter.status"
           placeholder="阅读状态"
           clearable
-          style="width: 140px; margin-left: 12px"
+          style="width: 120px; margin-left: 12px"
           @change="handleSearch"
         >
           <el-option
@@ -26,10 +26,21 @@
           />
         </el-select>
         <el-select
+          v-model="paperStore.filter.ccfRank"
+          placeholder="CCF 等级"
+          clearable
+          style="width: 120px; margin-left: 12px"
+          @change="handleSearch"
+        >
+          <el-option label="CCF-A" value="A" />
+          <el-option label="CCF-B" value="B" />
+          <el-option label="CCF-C" value="C" />
+        </el-select>
+        <el-select
           v-model="paperStore.filter.tagId"
           placeholder="标签筛选"
           clearable
-          style="width: 140px; margin-left: 12px"
+          style="width: 120px; margin-left: 12px"
           @change="handleSearch"
         >
           <el-option
@@ -48,6 +59,25 @@
         />
       </div>
       <div class="right-tools">
+        <input 
+          type="file" 
+          ref="importInputRef" 
+          style="display: none" 
+          accept=".bib,.ris" 
+          @change="handleImportFile" 
+        />
+        <el-button icon="Upload" @click="triggerImport" style="margin-right: 12px">导入</el-button>
+        
+        <el-dropdown split-button type="default" @click="handleExport('bibtex')" @command="handleExport" style="margin-right: 12px">
+          导出 BibTeX
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="bibtex">导出为 BibTeX</el-dropdown-item>
+              <el-dropdown-item command="ris">导出为 RIS</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
         <el-button type="primary" icon="Plus" round @click="showUploadDialog = true">
           上传论文
         </el-button>
@@ -60,14 +90,24 @@
       :data="paperStore.papers"
       style="width: 100%; margin-top: 16px; border-radius: 8px;"
       :header-cell-style="{ background: '#f8f9fa', color: '#5f6368' }"
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="title" label="标题" min-width="200">
         <template #default="{ row }">
           <div class="title-cell">
-            <span class="title-text" @click="goToDetail(row.id)">{{ row.title }}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="title-text" @click="goToDetail(row.id)">{{ row.title }}</span>
+              <el-tag v-if="row.ccfRank" size="small" :color="getCcfColor(row.ccfRank)" effect="dark" style="border: none">
+                CCF-{{ row.ccfRank }}
+              </el-tag>
+            </div>
             <div class="meta-text">
               <span v-if="row.venue" class="venue-tag">{{ row.venue }}</span>
-              <span v-if="row.year">{{ row.year }}</span>
+              <span v-if="row.year" style="margin-right: 8px;">{{ row.year }}</span>
+              <span v-if="row.citationCount !== undefined" style="color: #909399; display: inline-flex; align-items: center;">
+                📖 {{ row.citationCount }} citations
+              </span>
             </div>
           </div>
         </template>
@@ -134,6 +174,7 @@ import { usePaperStore } from '../../stores/paperStore'
 import { useTagStore } from '../../stores/tagStore'
 import { ReadingStatusLabel, ReadingStatusColor } from '../../types/enums'
 import { togglePaperStar, deletePaper } from '../../api/paper'
+import { importPapers, exportPapers } from '../../api/importExport'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PaperUploadDialog from './components/PaperUploadDialog.vue'
 
@@ -142,6 +183,8 @@ const paperStore = usePaperStore()
 const tagStore = useTagStore()
 
 const showUploadDialog = ref(false)
+const importInputRef = ref<HTMLInputElement>()
+const selectedRows = ref<any[]>([])
 
 const currentPage = computed({
   get: () => paperStore.filter.page + 1,
@@ -163,6 +206,15 @@ const handlePageChange = () => {
 
 const getStatusColor = (status: string) => {
   return ReadingStatusColor[status as keyof typeof ReadingStatusColor] || '#999'
+}
+
+const getCcfColor = (rank: string) => {
+  switch (rank) {
+    case 'A': return '#F56C6C'
+    case 'B': return '#E6A23C'
+    case 'C': return '#409EFF'
+    default: return '#909399'
+  }
 }
 
 const goToDetail = (id: number) => {
@@ -203,6 +255,54 @@ const handleUploadSuccess = () => {
   paperStore.fetchPapers()
 }
 
+// Import & Export
+const triggerImport = () => {
+  importInputRef.value?.click()
+}
+
+const handleImportFile = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0]
+    try {
+      const res = await importPapers(file!)
+      if (res.code === 200) {
+        ElMessage.success(`成功导入 ${res.data.length} 篇论文`)
+        paperStore.fetchPapers()
+      }
+    } catch (error) {
+      console.error(error)
+      ElMessage.error('导入失败')
+    } finally {
+      input.value = '' // reset
+    }
+  }
+}
+
+const handleSelectionChange = (val: any[]) => {
+  selectedRows.value = val
+}
+
+const handleExport = async (format: string) => {
+  if (format !== 'bibtex' && format !== 'ris') return // protect against command event quirks
+  
+  const ids = selectedRows.value.length > 0 ? selectedRows.value.map(r => r.id) : undefined
+  try {
+    const res = await exportPapers(format as 'bibtex' | 'ris', ids)
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([res as any]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `papers_export.${format === 'bibtex' ? 'bib' : 'ris'}`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('导出失败')
+  }
+}
+
 onMounted(() => {
   tagStore.fetchTags()
   paperStore.fetchPapers()
@@ -210,6 +310,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Reuse existing styles */
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -221,6 +322,11 @@ onMounted(() => {
 }
 
 .left-tools {
+  display: flex;
+  align-items: center;
+}
+
+.right-tools {
   display: flex;
   align-items: center;
 }

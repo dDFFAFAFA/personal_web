@@ -36,6 +36,11 @@ export interface Paper {
   noteCount: number
   createdAt: string
   updatedAt: string
+  ccfRank?: string
+  jcrQuartile?: string
+  impactFactor?: number
+  citationCount?: number
+  paperUrl?: string
 }
 
 export interface PaperFilter {
@@ -46,4 +51,28 @@ export interface PaperFilter {
   tagId?: number
   starred?: boolean
   keyword?: string
+  ccfRank?: string
+}
+
+export interface MetadataEnrichResponse {
+  title: string
+  authors: string[]
+  year: number
+  venue: string
+  doi: string
+  abstractText: string
+  paperUrl: string
+  citationCount: number
+  ccfRank?: string
+  jcrQuartile?: string
+  source: string
+}
+
+export interface VenueRankingResponse {
+  venue: string
+  ccfRank?: string
+  jcrQuartile?: string
+  impactFactor?: number
+  category: string
+  type: string
 }

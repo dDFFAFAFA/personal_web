@@ -7,6 +7,7 @@ import com.changye.web.dto.request.StarUpdateRequest;
 import com.changye.web.dto.request.StatusUpdateRequest;
 import com.changye.web.dto.response.PaperResponse;
 import com.changye.web.dto.response.TagResponse;
+import com.changye.web.dto.response.VenueRankingResponse;
 import com.changye.web.model.Note;
 import com.changye.web.model.Paper;
 import com.changye.web.model.Tag;
@@ -53,6 +54,7 @@ public class PaperService {
     private final NoteRepository noteRepository;
     private final TagRepository tagRepository;
     private final ObjectMapper objectMapper;
+    private final VenueRankingService venueRankingService;
 
     @Value("${app.upload.path}")
     private String uploadPath;
@@ -60,11 +62,13 @@ public class PaperService {
     public PaperService(PaperRepository paperRepository,
                         NoteRepository noteRepository,
                         TagRepository tagRepository,
-                        ObjectMapper objectMapper) {
+                        ObjectMapper objectMapper,
+                        VenueRankingService venueRankingService) {
         this.paperRepository = paperRepository;
         this.noteRepository = noteRepository;
         this.tagRepository = tagRepository;
         this.objectMapper = objectMapper;
+        this.venueRankingService = venueRankingService;
     }
 
     @Transactional(readOnly = true)
@@ -105,12 +109,24 @@ public class PaperService {
                 .starred(false)
                 .tags(tags)
                 .build();
+        applyVenueRanking(paper);
 
         Paper saved = paperRepository.save(paper);
         storeFile(saved, file);
         Paper updated = paperRepository.save(saved);
         log.info("Created paper id={} title={}", updated.getId(), updated.getTitle());
         return toPaperResponse(updated, false, 0);
+    }
+
+    public List<PaperResponse> createPapersFromImport(List<PaperCreateRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return List.of();
+        }
+        List<PaperResponse> responses = new ArrayList<>();
+        for (PaperCreateRequest request : requests) {
+            responses.add(createPaperFromImport(request));
+        }
+        return responses;
     }
 
     public PaperResponse updatePaper(Long id, PaperUpdateRequest request) {
@@ -179,6 +195,28 @@ public class PaperService {
     private Paper findPaper(Long id) {
         return paperRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(404, "论文不存在"));
+    }
+
+    private PaperResponse createPaperFromImport(PaperCreateRequest request) {
+        if (!StringUtils.hasText(request.getTitle())) {
+            throw new BusinessException(400, "论文标题不能为空");
+        }
+        Set<Tag> tags = resolveTags(request.getTagIds());
+        Paper paper = Paper.builder()
+                .title(request.getTitle())
+                .authors(writeAuthors(request.getAuthors()))
+                .year(request.getYear())
+                .venue(request.getVenue())
+                .doi(request.getDoi())
+                .abstractText(request.getAbstractText())
+                .readingStatus(ReadingStatus.UNREAD)
+                .starred(false)
+                .tags(tags)
+                .build();
+        applyVenueRanking(paper);
+        Paper saved = paperRepository.save(paper);
+        log.info("Imported paper id={} title={}", saved.getId(), saved.getTitle());
+        return toPaperResponse(saved, false, 0);
     }
 
     private void storeFile(Paper paper, MultipartFile file) {
@@ -285,6 +323,19 @@ public class PaperService {
         return Paths.get(fileName).getFileName().toString();
     }
 
+    private void applyVenueRanking(Paper paper) {
+        if (!StringUtils.hasText(paper.getVenue())) {
+            return;
+        }
+        VenueRankingResponse ranking = venueRankingService.lookup(paper.getVenue());
+        if (ranking == null) {
+            return;
+        }
+        paper.setCcfRank(ranking.getCcfRank());
+        paper.setJcrQuartile(ranking.getJcrQuartile());
+        paper.setImpactFactor(ranking.getImpactFactor());
+    }
+
     private PaperResponse toPaperResponse(Paper paper, boolean includeNotes, int noteCount) {
         return toPaperResponse(paper, includeNotes, noteCount, List.of());
     }
@@ -326,6 +377,11 @@ public class PaperService {
                 .readingStatus(paper.getReadingStatus())
                 .starred(paper.getStarred())
                 .abstractText(paper.getAbstractText())
+                .ccfRank(paper.getCcfRank())
+                .jcrQuartile(paper.getJcrQuartile())
+                .impactFactor(paper.getImpactFactor())
+                .citationCount(paper.getCitationCount())
+                .paperUrl(paper.getPaperUrl())
                 .tags(tagResponses)
                 .notes(noteSummaries)
                 .noteCount(noteCount)
