@@ -84,3 +84,31 @@
 2. 新增文件/目录必须落在自己拥有的路径下
 3. 如需在他人区域新增文件，须在任务报告中申请
 4. 所有权变更须由 **Antigravity** 更新本文件
+
+---
+
+## Phase4 并行线程附加规则（强制）
+
+> 本节用于多线程并行开发（2 后端 + 1 前端 + 1 审查）时的权限补充。  
+> 与上文冲突时，以本节为准。
+
+### 线程角色与权限
+
+| 线程 | 允许修改 | 禁止修改 |
+|------|----------|----------|
+| `BE-Thread-A`（后端-摘要链路） | `backend/**` 中与 summary/llm/storage-migration 相关文件 | `frontend/**`, `docs/API_CONTRACT.md`, `CONTRACT.md`, `OWNERSHIP.md` |
+| `BE-Thread-B`（后端-仓库链接链路） | `backend/**` 中与 repo-link extraction / apply 相关文件 | `frontend/**`, `docs/API_CONTRACT.md`, `CONTRACT.md`, `OWNERSHIP.md` |
+| `FE-Thread`（前端） | `frontend/**` | `backend/**`, `docs/API_CONTRACT.md`, `CONTRACT.md`, `OWNERSHIP.md` |
+| `REVIEW-Thread`（审查与集成） | `docs/**`, 合并提交（`cherry-pick`/冲突解决） | 功能开发实现（仅做审查必要修复） |
+
+### 并行冲突规则
+
+1. `BE-Thread-A` 与 `BE-Thread-B` 都可改 `backend/**`，但同一时间不得并发改同一文件。
+2. 共享文件（例如 `PaperController`, `PaperService`, `PaperRepository`）必须先在任务看板登记“文件锁”再改。
+3. `REVIEW-Thread` 独占 `codex/p4-integration` 分支；其他线程禁止直接提交到 integration。
+4. 任何线程不得直接提交到 `main` 或 `develop`。
+
+### 执行入口
+
+- 线程执行标准和交付格式统一见：`docs/AGENT_RUNBOOK.md`
+- 任务分配和文件锁登记统一见：`docs/PHASE4_TASK_BOARD.md`

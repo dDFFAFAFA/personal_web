@@ -13,6 +13,15 @@
 | **Codex** | 后端开发者 | Spring Boot 业务代码：Controller, Service, Repository, Common, Tests |
 | **Gemini** | 前端开发者 | Vue 3 全部前端代码：页面、组件、路由、状态管理、样式 |
 
+### Phase4 线程扩展角色
+
+| 线程 | 角色 | 职责范围 |
+|------|------|---------|
+| `BE-Thread-A` | 后端开发（摘要链路） | PDF 文本提取、LLM 概要生成、概要存储与下载、存储迁移工具 |
+| `BE-Thread-B` | 后端开发（仓库链接链路） | PDF GitHub/Gitee 链接提取、候选管理、应用到代码索引 |
+| `FE-Thread` | 前端开发 | 首页概要展示、论文详情概要与链接提取交互 |
+| `REVIEW-Thread` | 审查与合并 | 代码审查、质量门禁、分支收敛、integration 合并 |
+
 ---
 
 ## 2. 文件权限规则
@@ -39,6 +48,16 @@
 2. 阅读 `OWNERSHIP.md` 确认文件权限
 3. 阅读 `docs/API_CONTRACT.md` 了解接口定义
 4. 按任务描述中的**交付标准**完成工作
+
+### 3.1.1 无提示词执行模式（Phase4 开始）
+
+从 Phase4 起，线程不再依赖临时提示词，直接按以下文档执行：
+1. `CONTRACT.md`
+2. `OWNERSHIP.md`
+3. `docs/AGENT_RUNBOOK.md`
+4. `docs/PHASE4_TASK_BOARD.md`
+
+项目经理仅需更新任务看板并通知“任务已更新”。
 
 ### 3.2 接口契约遵守
 
@@ -236,6 +255,42 @@ redisdata/
 
 > [!WARNING]  
 > **绝对不要提交的内容**：`.env` 文件（含数据库密码等敏感信息）、`uploads/` 目录（用户上传文件）、`node_modules/`、`target/`。
+
+### 3.4 Phase4 Worktree 并行分支规范（强制）
+
+> 本节是 Phase4 的执行覆盖规则。与 3.3 冲突时，以本节为准。
+
+#### 3.4.1 分支层次
+
+1. 集成分支：`codex/p4-integration`（仅 `REVIEW-Thread` 可写）
+2. 线程基线分支：
+- `codex/p4-be-a`
+- `codex/p4-be-b`
+- `codex/p4-fe`
+- `codex/p4-review`
+3. 功能分支（短生命周期）：
+- `codex/p4-be-a-{feature}`
+- `codex/p4-be-b-{feature}`
+- `codex/p4-fe-{feature}`
+
+#### 3.4.2 交付路径
+
+1. 线程在功能分支开发并自测。
+2. 功能分支合回对应线程基线分支。
+3. `REVIEW-Thread` 从线程基线分支 `cherry-pick` 到 `codex/p4-integration`。
+4. 在 integration 完成联调后再合入 `develop/main`。
+
+#### 3.4.3 质量门禁
+
+1. 后端提交必须提供：`mvn -q test` 结果。
+2. 前端提交必须提供：`npm run build` 结果。
+3. `REVIEW-Thread` 必须复跑核心门禁并给出审查结论。
+
+#### 3.4.4 统一 Handoff 格式
+
+每次交付必须使用：
+
+`[HANDOFF] branch=<branch> commits=<hash1,hash2> test="<cmd>:PASS/FAIL" risk="<text>"`
 
 ---
 
@@ -436,4 +491,3 @@ instance.interceptors.response.use(
 任务完成后，请将你的工作报告追加到 `docs/TASK_REPORT.md` 文件中对应的 Phase 区域。
 请按照文件底部的报告模板格式填写，包括：完成的工作清单、运行结果、遇到的问题、建议、文件列表。
 ```
-
