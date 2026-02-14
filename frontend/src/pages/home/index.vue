@@ -56,13 +56,14 @@
           <div v-else class="summary-list">
             <div v-for="item in summaries" :key="`${item.paperId}-${item.summaryId || 'latest'}`" class="summary-item">
               <div class="summary-main">
-                <div class="summary-title">{{ item.title || item.paperTitle || `论文 #${item.paperId}` }}</div>
+                <div class="summary-title">{{ getSummaryTitle(item) }}</div>
                 <div class="summary-meta">
                   <el-tag size="small" :type="getSummaryStatusType(item.status)">
                     {{ getSummaryStatusLabel(item.status) }}
                   </el-tag>
                   <span class="summary-time">时间：{{ formatTime(item.generatedAt) }}</span>
                 </div>
+                <div class="summary-one-sentence" v-if="item.oneSentence">{{ item.oneSentence }}</div>
                 <div class="summary-message" v-if="item.message">{{ item.message }}</div>
               </div>
               <div class="summary-item-actions">
@@ -121,15 +122,40 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return typeof msg === 'string' && msg.trim() ? msg.trim() : fallback
 }
 
-const normalizeHomeSummaries = (raw: unknown): HomeSummaryItem[] => {
-  if (Array.isArray(raw)) return raw as HomeSummaryItem[]
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, any>
-    if (Array.isArray(obj.content)) return obj.content as HomeSummaryItem[]
-    if (Array.isArray(obj.items)) return obj.items as HomeSummaryItem[]
-    if (Array.isArray(obj.records)) return obj.records as HomeSummaryItem[]
+const normalizeSummaryItem = (raw: unknown): HomeSummaryItem | null => {
+  if (!raw || typeof raw !== 'object') return null
+  const src = raw as Record<string, any>
+  const paperId = Number(src.paperId ?? src.paper_id ?? 0)
+  if (!Number.isFinite(paperId) || paperId <= 0) return null
+
+  return {
+    paperId,
+    summaryId: src.summaryId ?? src.summary_id,
+    paperTitle: src.paperTitle ?? src.paper_title,
+    title: src.title,
+    modelName: src.modelName ?? src.model_name,
+    oneSentence: src.oneSentence ?? src.one_sentence,
+    status: (src.status as PaperSummaryStatus) || 'PENDING',
+    generatedAt: src.generatedAt ?? src.generated_at,
+    message: src.message
   }
-  return []
+}
+
+const normalizeHomeSummaries = (raw: unknown): HomeSummaryItem[] => {
+  let source: unknown[] = []
+
+  if (Array.isArray(raw)) {
+    source = raw
+  } else if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, any>
+    if (Array.isArray(obj.content)) source = obj.content
+    else if (Array.isArray(obj.items)) source = obj.items
+    else if (Array.isArray(obj.records)) source = obj.records
+  }
+
+  return source
+    .map(normalizeSummaryItem)
+    .filter((item): item is HomeSummaryItem => Boolean(item))
 }
 
 const fetchSummaries = async () => {
@@ -161,8 +187,12 @@ const getSummaryStatusType = (status: PaperSummaryStatus) => {
   return 'info'
 }
 
+const getSummaryTitle = (item: HomeSummaryItem) => {
+  return item.modelName || item.paperTitle || item.title || `论文 #${item.paperId}`
+}
+
 const canDownloadSummary = (item: HomeSummaryItem) => {
-  return item.status === 'SUCCESS'
+  return item.paperId > 0 && item.status === 'SUCCESS'
 }
 
 const handleDownloadSummary = async (item: HomeSummaryItem) => {
@@ -260,6 +290,17 @@ onMounted(() => {
 .summary-time {
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+.summary-one-sentence {
+  margin-top: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .summary-message {

@@ -243,7 +243,14 @@
                   失败原因：{{ summaryState?.error }}
                 </div>
                 <el-empty v-if="!summaryMarkdown" description="暂无概要内容，点击“生成概要”开始。" />
-                <pre v-else class="summary-markdown">{{ summaryMarkdown }}</pre>
+                <div v-else class="summary-markdown">
+                  <MdPreview
+                    :editorId="summaryPreviewId"
+                    :modelValue="summaryMarkdown"
+                    previewTheme="github"
+                    codeTheme="a11y"
+                  />
+                </div>
               </div>
             </el-card>
 
@@ -353,6 +360,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { MdPreview } from 'md-editor-v3'
+import 'md-editor-v3/lib/preview.css'
 import {
   applyPaperRepoLinks,
   getPaperDetail,
@@ -382,7 +391,7 @@ import PdfViewer from './components/PdfViewer.vue'
 const route = useRoute()
 const router = useRouter()
 const paperId = Number(route.params.id)
-
+const summaryPreviewId = `paper-summary-preview-${paperId}`
 const loading = ref(false)
 const enrichLoading = ref(false)
 const backupLoading = ref(false)
@@ -975,17 +984,23 @@ onMounted(() => {
 }
 
 .summary-markdown {
-  margin: 0;
   max-height: 360px;
   overflow: auto;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
   background: #fafafa;
-  font-size: 13px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
+}
+
+.summary-markdown :deep(.md-editor-preview-wrapper) {
+  padding: 0;
+  background: transparent;
+}
+
+.summary-markdown :deep(p),
+.summary-markdown :deep(li),
+.summary-markdown :deep(blockquote) {
+  line-height: 1.7;
 }
 
 .repo-links-list {
