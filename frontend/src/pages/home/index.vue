@@ -188,7 +188,7 @@ const getSummaryStatusType = (status: PaperSummaryStatus) => {
 }
 
 const getSummaryTitle = (item: HomeSummaryItem) => {
-  return item.modelName || item.paperTitle || item.title || `论文 #${item.paperId}`
+  return item.modelName || item.paperTitle || `论文 #${item.paperId}`
 }
 
 const canDownloadSummary = (item: HomeSummaryItem) => {
