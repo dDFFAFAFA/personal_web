@@ -100,6 +100,8 @@ export interface HomeSummaryItem {
   summaryId?: number
   paperTitle?: string
   title?: string
+  modelName?: string
+  oneSentence?: string
   status: PaperSummaryStatus
   generatedAt?: string
   message?: string
