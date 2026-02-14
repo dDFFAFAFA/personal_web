@@ -4,6 +4,7 @@ import com.changye.web.dto.request.PaperCreateRequest;
 import com.changye.web.dto.response.PaperResponse;
 import com.changye.web.model.enums.ReadingStatus;
 import com.changye.web.service.PaperService;
+import com.changye.web.service.StorageBackupService;
 
 import java.util.List;
 
@@ -34,6 +35,9 @@ class PaperControllerTest {
 
     @MockBean
     private PaperService paperService;
+
+    @MockBean
+    private StorageBackupService storageBackupService;
 
     @Test
     void listPapersReturnsPage() throws Exception {

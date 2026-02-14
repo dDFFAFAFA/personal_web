@@ -1,6 +1,7 @@
 package com.changye.web.model;
 
 import com.changye.web.model.enums.ReadingStatus;
+import com.changye.web.model.enums.BackupStatus;
 import java.math.BigDecimal;
 import jakarta.persistence.*;
 import lombok.*;
@@ -74,6 +75,20 @@ public class Paper {
 
     @Column(name = "paper_url", length = 500)
     private String paperUrl; // Original paper link (e.g. arXiv URL)
+
+    @Column(name = "oss_object_key", length = 600)
+    private String ossObjectKey;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "backup_status", nullable = false, length = 20)
+    @Builder.Default
+    private BackupStatus backupStatus = BackupStatus.NOT_BACKED_UP;
+
+    @Column(name = "backup_at")
+    private OffsetDateTime backupAt;
+
+    @Column(name = "backup_error", columnDefinition = "TEXT")
+    private String backupError;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "paper_tags", joinColumns = @JoinColumn(name = "paper_id", foreignKey = @ForeignKey(name = "fk_paper_tags_paper")), inverseJoinColumns = @JoinColumn(name = "tag_id", foreignKey = @ForeignKey(name = "fk_paper_tags_tag")))

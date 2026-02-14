@@ -13,6 +13,14 @@ const instance = axios.create({
 // Response interceptor
 instance.interceptors.response.use(
   (response) => {
+    const responseType = response.config.responseType
+    const contentType = (response.headers?.['content-type'] || '') as string
+
+    // File download and non-JSON response should bypass ApiResponse parsing.
+    if (responseType === 'blob' || responseType === 'arraybuffer' || !contentType.includes('application/json')) {
+      return response.data as any
+    }
+
     const res = response.data as ApiResponse
     // If the custom code is not 200, it is judged as an error.
     if (res.code !== 200) {

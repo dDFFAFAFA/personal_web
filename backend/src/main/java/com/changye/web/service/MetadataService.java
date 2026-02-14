@@ -187,7 +187,8 @@ public class MetadataService {
                                 .queryParam("query", title)
                                 .queryParam("fields", "title,authors,year,venue,abstract,citationCount,externalIds,url")
                                 .queryParam("limit", 1)
-                                .build(true)
+                                .build()
+                                .encode()
                                 .toUri(),
                         HttpMethod.GET,
                         new HttpEntity<>(buildHeaders()),

@@ -5,6 +5,7 @@ import PaperList from '../pages/papers/index.vue'
 import PaperDetail from '../pages/papers/detail.vue'
 import NoteEdit from '../pages/papers/note-edit.vue'
 import Tags from '../pages/tags/index.vue'
+import Settings from '../pages/settings/index.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -35,6 +36,11 @@ const routes: Array<RouteRecordRaw> = [
         path: 'tags',
         name: 'Tags',
         component: Tags
+      },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: Settings
       }
     ]
   }

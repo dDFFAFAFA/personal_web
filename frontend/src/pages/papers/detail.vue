@@ -107,6 +107,41 @@
                   <el-button type="success" plain style="width: 100%; margin-left: 0; margin-top: 8px;" :icon="Document" @click="activeTab = 'pdf'">
                     阅读 PDF
                   </el-button>
+                  <div class="backup-row">
+                    <span class="label">备份状态:</span>
+                    <el-tag :type="backupStatusType" size="small">{{ backupStatusLabel }}</el-tag>
+                  </div>
+                  <div class="backup-time" v-if="backupState?.backupAt || paper.backupAt">
+                    最近备份: {{ formatDate(backupState?.backupAt || paper.backupAt || '') }}
+                  </div>
+                  <div class="backup-time error" v-if="backupState?.backupError || paper.backupError">
+                    {{ backupState?.backupError || paper.backupError }}
+                  </div>
+                  <el-button
+                    type="warning"
+                    plain
+                    style="width: 100%; margin-left: 0; margin-top: 8px;"
+                    @click="handleBackupToOss"
+                    :loading="backupLoading"
+                  >
+                    备份到 OSS
+                  </el-button>
+                  <el-button
+                    plain
+                    style="width: 100%; margin-left: 0; margin-top: 8px;"
+                    @click="handleRestoreFromOss"
+                    :loading="restoreLoading"
+                  >
+                    从 OSS 恢复
+                  </el-button>
+                  <el-button
+                    plain
+                    style="width: 100%; margin-left: 0; margin-top: 8px;"
+                    @click="handleSyncRepo"
+                    :loading="syncRepoLoading"
+                  >
+                    同步仓库（Clone/Pull）
+                  </el-button>
                 </div>
               </div>
             </el-card>
@@ -178,10 +213,20 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getPaperDetail, updatePaperStatus, togglePaperStar, deletePaper } from '../../api/paper'
+import {
+  getPaperDetail,
+  updatePaperStatus,
+  togglePaperStar,
+  deletePaper,
+  backupPaperToOss,
+  getPaperBackupStatus,
+  restorePaperFromOss,
+  type PaperBackupStatus
+} from '../../api/paper'
 import { getPaperNotes, createNote as apiCreateNote } from '../../api/note'
 import { enrichPaper } from '../../api/metadata'
 import { exportPapers } from '../../api/importExport'
+import { syncRepo } from '../../api/repo'
 import type { Paper, Note } from '../../types/paper'
 import { ReadingStatusLabel } from '../../types/enums'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -194,21 +239,27 @@ const paperId = Number(route.params.id)
 
 const loading = ref(false)
 const enrichLoading = ref(false)
+const backupLoading = ref(false)
+const restoreLoading = ref(false)
+const syncRepoLoading = ref(false)
 const paper = ref<Paper>({} as Paper)
 const notes = ref<Note[]>([])
 const activeTab = ref('details')
+const backupState = ref<PaperBackupStatus | null>(null)
 
 const pdfUrl = computed(() => `/api/v1/papers/${paperId}/file`)
 
 const fetchData = async () => {
   loading.value = true
   try {
-    const [paperRes, notesRes] = await Promise.all([
+    const [paperRes, notesRes, backupRes] = await Promise.all([
       getPaperDetail(paperId),
-      getPaperNotes(paperId)
+      getPaperNotes(paperId),
+      getPaperBackupStatus(paperId)
     ])
     if (paperRes.code === 200) paper.value = paperRes.data
     if (notesRes.code === 200) notes.value = notesRes.data
+    if (backupRes.code === 200) backupState.value = backupRes.data
   } catch (error) {
     console.error(error)
     ElMessage.error('获取详情失败')
@@ -253,6 +304,7 @@ const editNote = (noteId: number) => {
 }
 
 const formatDate = (str: string) => {
+  if (!str) return '-'
   return new Date(str).toLocaleDateString()
 }
 
@@ -290,6 +342,70 @@ const handleCopyBibtex = async () => {
   } catch (error) {
     console.error(error)
     ElMessage.error('复制失败')
+  }
+}
+
+const backupStatusLabel = computed(() => {
+  const status = backupState.value?.backupStatus || paper.value.backupStatus
+  if (status === 'BACKED_UP') return '已备份'
+  if (status === 'FAILED') return '备份失败'
+  return '未备份'
+})
+
+const backupStatusType = computed(() => {
+  const status = backupState.value?.backupStatus || paper.value.backupStatus
+  if (status === 'BACKED_UP') return 'success'
+  if (status === 'FAILED') return 'danger'
+  return 'info'
+})
+
+const handleBackupToOss = async () => {
+  backupLoading.value = true
+  try {
+    const res = await backupPaperToOss(paperId)
+    if (res.code === 200) {
+      backupState.value = res.data
+      paper.value.backupStatus = res.data.backupStatus
+      paper.value.backupAt = res.data.backupAt
+      paper.value.backupError = res.data.backupError
+      ElMessage.success('已备份到 OSS')
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    backupLoading.value = false
+  }
+}
+
+const handleRestoreFromOss = async () => {
+  restoreLoading.value = true
+  try {
+    const res = await restorePaperFromOss(paperId)
+    if (res.code === 200) {
+      backupState.value = res.data
+      paper.value.backupStatus = res.data.backupStatus
+      paper.value.backupAt = res.data.backupAt
+      paper.value.backupError = res.data.backupError
+      ElMessage.success('已从 OSS 恢复本地文件')
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    restoreLoading.value = false
+  }
+}
+
+const handleSyncRepo = async () => {
+  syncRepoLoading.value = true
+  try {
+    const res = await syncRepo()
+    if (res.code === 200) {
+      ElMessage.success(res.data.message || '仓库同步成功')
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    syncRepoLoading.value = false
   }
 }
 
@@ -368,6 +484,23 @@ onMounted(() => {
   margin-top: 24px;
 }
 
+.backup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.backup-time {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.backup-time.error {
+  color: #f56c6c;
+}
+
 .notes-header {
   display: flex;
   justify-content: space-between;
@@ -407,4 +540,3 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 </style>
-

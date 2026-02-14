@@ -179,3 +179,20 @@ export const deletePaper = (id: number) => {
   }
   return request.delete<any, ApiResponse<null>>(`/papers/${id}`)
 }
+
+export interface PaperBackupStatus {
+  paperId: number
+  backupStatus: 'NOT_BACKED_UP' | 'BACKED_UP' | 'FAILED'
+  backupAt?: string
+  backupError?: string
+  ossObjectKey?: string
+}
+
+export const backupPaperToOss = (id: number) =>
+  request.post<any, ApiResponse<PaperBackupStatus>>(`/papers/${id}/backup`)
+
+export const getPaperBackupStatus = (id: number) =>
+  request.get<any, ApiResponse<PaperBackupStatus>>(`/papers/${id}/backup-status`)
+
+export const restorePaperFromOss = (id: number) =>
+  request.post<any, ApiResponse<PaperBackupStatus>>(`/papers/${id}/restore`)

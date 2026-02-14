@@ -7,9 +7,11 @@ import com.changye.web.dto.request.PaperCreateRequest;
 import com.changye.web.dto.request.PaperUpdateRequest;
 import com.changye.web.dto.request.StarUpdateRequest;
 import com.changye.web.dto.request.StatusUpdateRequest;
+import com.changye.web.dto.response.PaperBackupStatusResponse;
 import com.changye.web.dto.response.PaperResponse;
 import com.changye.web.model.enums.ReadingStatus;
 import com.changye.web.service.PaperService;
+import com.changye.web.service.StorageBackupService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,10 +50,14 @@ import org.springframework.core.io.Resource;
 public class PaperController {
 
     private final PaperService paperService;
+    private final StorageBackupService storageBackupService;
     private final ObjectMapper objectMapper;
 
-    public PaperController(PaperService paperService, ObjectMapper objectMapper) {
+    public PaperController(PaperService paperService,
+                           StorageBackupService storageBackupService,
+                           ObjectMapper objectMapper) {
         this.paperService = paperService;
+        this.storageBackupService = storageBackupService;
         this.objectMapper = objectMapper;
     }
 
@@ -140,6 +146,24 @@ public class PaperController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                 .body(resource);
+    }
+
+    @PostMapping("/papers/{id}/backup")
+    public ResponseEntity<ApiResponse<PaperBackupStatusResponse>> backupPaper(@PathVariable Long id) {
+        PaperBackupStatusResponse response = storageBackupService.backupPaper(id);
+        return ResponseEntity.ok(ApiResponse.success("备份成功", response));
+    }
+
+    @GetMapping("/papers/{id}/backup-status")
+    public ResponseEntity<ApiResponse<PaperBackupStatusResponse>> getBackupStatus(@PathVariable Long id) {
+        PaperBackupStatusResponse response = storageBackupService.getBackupStatus(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/papers/{id}/restore")
+    public ResponseEntity<ApiResponse<PaperBackupStatusResponse>> restorePaper(@PathVariable Long id) {
+        PaperBackupStatusResponse response = storageBackupService.restorePaper(id);
+        return ResponseEntity.ok(ApiResponse.success("恢复成功", response));
     }
 
     private <T> List<T> parseList(String raw, TypeReference<List<T>> type) {

@@ -41,6 +41,9 @@ export interface Paper {
   impactFactor?: number
   citationCount?: number
   paperUrl?: string
+  backupStatus?: 'NOT_BACKED_UP' | 'BACKED_UP' | 'FAILED'
+  backupAt?: string
+  backupError?: string
 }
 
 export interface PaperFilter {
