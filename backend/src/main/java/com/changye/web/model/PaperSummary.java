@@ -54,6 +54,9 @@ public class PaperSummary {
     @Column(name = "markdown_content", columnDefinition = "TEXT")
     private String markdownContent;
 
+    @Column(name = "one_sentence", length = 600)
+    private String oneSentence;
+
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 

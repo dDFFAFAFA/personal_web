@@ -106,8 +106,10 @@ public class PaperSummaryService {
         try {
             String pdfText = extractPdfText(resolvePaperFilePath(paper));
             String markdown = callProvider(providerConfig, buildPrompt(paper, pdfText));
+            String oneSentence = extractOneSentenceFromMarkdown(markdown);
             summary.setStatus(PaperSummaryStatus.SUCCESS);
             summary.setMarkdownContent(markdown);
+            summary.setOneSentence(oneSentence);
             summary.setErrorMessage(null);
             summary.setGeneratedAt(OffsetDateTime.now());
             PaperSummary saved = paperSummaryRepository.save(summary);
@@ -237,7 +239,7 @@ public class PaperSummaryService {
                             .set("messages", objectMapper.createArrayNode()
                                     .add(objectMapper.createObjectNode()
                                             .put("role", "system")
-                                            .put("content", "你是科研论文助手。请输出结构化中文 Markdown 摘要，包含：问题定义、核心方法、实验设置、关键结果、局限性、可复现要点。"))
+                                            .put("content", "你是科研论文助手。请输出结构化中文 Markdown 摘要，必须包含两行字段：模型名称：...；一句话精要：...。并包含：问题定义、核心方法、实验设置、关键结果、局限性、可复现要点。"))
                                     .add(objectMapper.createObjectNode()
                                             .put("role", "user")
                                             .put("content", prompt)))
@@ -320,6 +322,7 @@ public class PaperSummaryService {
     }
 
 
+
     private PaperSummaryResponse toResponse(PaperSummary summary) {
         String markdown = summary.getMarkdownContent();
         return PaperSummaryResponse.builder()
@@ -330,7 +333,7 @@ public class PaperSummaryService {
                 .provider(summary.getProvider())
                 .model(summary.getModelName())
                 .modelName(extractModelNameFromMarkdown(markdown))
-                .oneSentence(extractOneSentence(markdown))
+                .oneSentence(normalizeOneSentence(summary.getOneSentence()))
                 .markdown(markdown)
                 .generatedAt(summary.getGeneratedAt())
                 .error(summary.getErrorMessage())
@@ -339,7 +342,7 @@ public class PaperSummaryService {
 
     private String extractModelNameFromMarkdown(String markdown) {
         if (!StringUtils.hasText(markdown)) {
-            return null;
+            return "";
         }
         for (String line : markdown.split("\\R")) {
             String cleaned = normalizeLine(line);
@@ -354,12 +357,12 @@ public class PaperSummaryService {
                 }
             }
         }
-        return null;
+        return "";
     }
 
-    private String extractOneSentence(String markdown) {
+    private String extractOneSentenceFromMarkdown(String markdown) {
         if (!StringUtils.hasText(markdown)) {
-            return null;
+            return "";
         }
         for (String line : markdown.split("\\R")) {
             String cleaned = normalizeLine(line);
@@ -374,36 +377,7 @@ public class PaperSummaryService {
                 }
             }
         }
-        return firstSentenceFromMarkdown(markdown);
-    }
-
-    private String firstSentenceFromMarkdown(String markdown) {
-        String plain = markdown
-                .replaceAll("`{1,3}", " ")
-                .replaceAll("\\[(.*?)\\]\\((.*?)\\)", "$1")
-                .replaceAll("(?m)^\\s*[#>*-]+\\s*", "")
-                .replaceAll("[*_~]", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-        if (!StringUtils.hasText(plain)) {
-            return null;
-        }
-        int end = firstSentenceEndIndex(plain);
-        if (end < 0) {
-            return plain.length() > 200 ? plain.substring(0, 200).trim() : plain;
-        }
-        return plain.substring(0, end + 1).trim();
-    }
-
-    private int firstSentenceEndIndex(String text) {
-        int min = -1;
-        for (char punctuation : new char[]{'。', '！', '？', '.', '!', '?'}) {
-            int idx = text.indexOf(punctuation);
-            if (idx >= 0 && (min < 0 || idx < min)) {
-                min = idx;
-            }
-        }
-        return min;
+        return "";
     }
 
     private String normalizeLine(String line) {
@@ -415,20 +389,17 @@ public class PaperSummaryService {
 
     private String cleanupExtractedField(String value) {
         if (!StringUtils.hasText(value)) {
-            return null;
+            return "";
         }
-        String cleaned = value
+        return value
                 .replaceAll("\\[(.*?)\\]\\((.*?)\\)", "$1")
                 .replaceAll("[*_~`]+", "")
                 .replaceAll("\\s+", " ")
                 .trim();
-        if (!StringUtils.hasText(cleaned)) {
-            return null;
-        }
-        if (cleaned.endsWith("。") || cleaned.endsWith("；") || cleaned.endsWith(";")) {
-            cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
-        }
-        return cleaned;
+    }
+
+    private String normalizeOneSentence(String oneSentence) {
+        return StringUtils.hasText(oneSentence) ? oneSentence.trim() : "";
     }
     private int normalizeLimit(Integer limit) {
         if (limit == null) {
