@@ -1,4 +1,4 @@
-# AGENT_RUNBOOK (Phase4)
+# AGENT_RUNBOOK (Phase4+)
 
 > 目标：让各线程“看文档即执行”，不依赖临时提示词。
 
@@ -9,7 +9,7 @@
 3. 阅读并遵守：
 - `CONTRACT.md`
 - `OWNERSHIP.md`
-- `docs/PHASE4_TASK_BOARD.md`
+- 当前阶段任务板：`docs/PHASE{N}_TASK_BOARD.md`（Phase4 为 `docs/PHASE4_TASK_BOARD.md`）
 
 ## 2. 线程职责
 
@@ -33,19 +33,19 @@
 - `cherry-pick` 到 `codex/p4-integration`
 - 复跑门禁并输出合并结论
 
-## 3. 分支规则
+## 3. 分支规则（按阶段复用）
 
 1. 线程基线分支：
-- `codex/p4-be-a`
-- `codex/p4-be-b`
-- `codex/p4-fe`
-- `codex/p4-review`
-- `codex/p4-integration`（仅审查线程可写）
+- `codex/p{N}-be-a`
+- `codex/p{N}-be-b`
+- `codex/p{N}-fe`
+- `codex/p{N}-review`
+- `codex/p{N}-integration`（仅审查线程可写）
 
 2. 功能分支命名：
-- `codex/p4-be-a-{feature}`
-- `codex/p4-be-b-{feature}`
-- `codex/p4-fe-{feature}`
+- `codex/p{N}-be-a-{feature}`
+- `codex/p{N}-be-b-{feature}`
+- `codex/p{N}-fe-{feature}`
 
 3. 禁止直接提交：
 - `main`

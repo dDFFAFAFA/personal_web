@@ -59,6 +59,17 @@
 
 项目经理仅需更新任务看板并通知“任务已更新”。
 
+### 3.1.2 阶段循环机制（Phase4+ 强制）
+
+所有新 Phase 必须遵守固定循环（详细规则见 `docs/PHASE_OPERATING_MODEL.md`）：
+
+1. `PM-Lead + PM-Architect` 更新阶段文档（Goals、API/DB Draft、Task Board）。
+2. 开发线程先从线程基线拉功能分支，在功能分支开发并自测。
+3. 功能分支先合回各自线程基线分支。
+4. `REVIEW-Thread` 统一合入阶段 integration 分支并复跑门禁。
+5. `PM-Lead` 在启动环境执行验收（UAT）；通过后 integration 才能合入 `main`。
+6. 当前 Phase 收尾后再启动下一 Phase，循环执行。
+
 ### 3.2 接口契约遵守
 
 ```
@@ -291,6 +302,16 @@ redisdata/
 每次交付必须使用：
 
 `[HANDOFF] branch=<branch> commits=<hash1,hash2> test="<cmd>:PASS/FAIL" risk="<text>"`
+
+### 3.5 Reviewer 合并职责（强制）
+
+1. 仅 `REVIEW-Thread` 可向 `codex/p{N}-integration` 提交合并结果。
+2. 其他线程禁止直接向阶段 integration、`develop`、`main` 提交。
+3. reviewer 每次阶段合并必须给出：
+- 合并提交列表
+- 冲突说明（如有）
+- 后端/前端门禁结果
+- 发布建议（go / no-go）
 
 ---
 

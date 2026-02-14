@@ -87,7 +87,7 @@
 
 ---
 
-## Phase4 并行线程附加规则（强制）
+## Phase+ 并行线程附加规则（强制）
 
 > 本节用于多线程并行开发（2 后端 + 1 前端 + 1 审查）时的权限补充。  
 > 与上文冲突时，以本节为准。
@@ -105,10 +105,10 @@
 
 1. `BE-Thread-A` 与 `BE-Thread-B` 都可改 `backend/**`，但同一时间不得并发改同一文件。
 2. 共享文件（例如 `PaperController`, `PaperService`, `PaperRepository`）必须先在任务看板登记“文件锁”再改。
-3. `REVIEW-Thread` 独占 `codex/p4-integration` 分支；其他线程禁止直接提交到 integration。
+3. `REVIEW-Thread` 独占 `codex/p{N}-integration` 分支；其他线程禁止直接提交到阶段 integration。
 4. 任何线程不得直接提交到 `main` 或 `develop`。
 
 ### 执行入口
 
 - 线程执行标准和交付格式统一见：`docs/AGENT_RUNBOOK.md`
-- 任务分配和文件锁登记统一见：`docs/PHASE4_TASK_BOARD.md`
+- 任务分配和文件锁登记统一见：`docs/PHASE{N}_TASK_BOARD.md`（当前 Phase4 使用 `docs/PHASE4_TASK_BOARD.md`）
