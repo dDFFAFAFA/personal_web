@@ -11,9 +11,12 @@ import lombok.Data;
 public class PaperSummaryResponse {
     private Long summaryId;
     private Long paperId;
+    private String paperTitle;
     private PaperSummaryStatus status;
     private AiProvider provider;
     private String model;
+    private String modelName;
+    private String oneSentence;
     private String markdown;
     private OffsetDateTime generatedAt;
     private String error;

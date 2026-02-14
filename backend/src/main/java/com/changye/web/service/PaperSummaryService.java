@@ -21,6 +21,8 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +48,8 @@ public class PaperSummaryService {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(60);
     private static final int MAX_PROMPT_TEXT_LENGTH = 18_000;
+    private static final Pattern MODEL_NAME_PATTERN = Pattern.compile("(?:模型名称|模型名|模型)\\s*[：:]\\s*(.+)");
+    private static final Pattern ONE_SENTENCE_PATTERN = Pattern.compile("(?:一句话精要|一句话总结|一句话概括|一句话摘要)\\s*[：:]\\s*(.+)");
 
     private final PaperRepository paperRepository;
     private final PaperSummaryRepository paperSummaryRepository;
@@ -315,19 +319,117 @@ public class PaperSummaryService {
                 """.formatted(paper.getTitle(), text);
     }
 
+
     private PaperSummaryResponse toResponse(PaperSummary summary) {
+        String markdown = summary.getMarkdownContent();
         return PaperSummaryResponse.builder()
                 .summaryId(summary.getId())
                 .paperId(summary.getPaper().getId())
+                .paperTitle(summary.getPaper().getTitle())
                 .status(summary.getStatus())
                 .provider(summary.getProvider())
                 .model(summary.getModelName())
-                .markdown(summary.getMarkdownContent())
+                .modelName(extractModelNameFromMarkdown(markdown))
+                .oneSentence(extractOneSentence(markdown))
+                .markdown(markdown)
                 .generatedAt(summary.getGeneratedAt())
                 .error(summary.getErrorMessage())
                 .build();
     }
 
+    private String extractModelNameFromMarkdown(String markdown) {
+        if (!StringUtils.hasText(markdown)) {
+            return null;
+        }
+        for (String line : markdown.split("\\R")) {
+            String cleaned = normalizeLine(line);
+            if (!StringUtils.hasText(cleaned)) {
+                continue;
+            }
+            Matcher matcher = MODEL_NAME_PATTERN.matcher(cleaned);
+            if (matcher.find()) {
+                String value = cleanupExtractedField(matcher.group(1));
+                if (StringUtils.hasText(value)) {
+                    return value;
+                }
+            }
+        }
+        return null;
+    }
+
+    private String extractOneSentence(String markdown) {
+        if (!StringUtils.hasText(markdown)) {
+            return null;
+        }
+        for (String line : markdown.split("\\R")) {
+            String cleaned = normalizeLine(line);
+            if (!StringUtils.hasText(cleaned)) {
+                continue;
+            }
+            Matcher matcher = ONE_SENTENCE_PATTERN.matcher(cleaned);
+            if (matcher.find()) {
+                String value = cleanupExtractedField(matcher.group(1));
+                if (StringUtils.hasText(value)) {
+                    return value;
+                }
+            }
+        }
+        return firstSentenceFromMarkdown(markdown);
+    }
+
+    private String firstSentenceFromMarkdown(String markdown) {
+        String plain = markdown
+                .replaceAll("`{1,3}", " ")
+                .replaceAll("\\[(.*?)\\]\\((.*?)\\)", "$1")
+                .replaceAll("(?m)^\\s*[#>*-]+\\s*", "")
+                .replaceAll("[*_~]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+        if (!StringUtils.hasText(plain)) {
+            return null;
+        }
+        int end = firstSentenceEndIndex(plain);
+        if (end < 0) {
+            return plain.length() > 200 ? plain.substring(0, 200).trim() : plain;
+        }
+        return plain.substring(0, end + 1).trim();
+    }
+
+    private int firstSentenceEndIndex(String text) {
+        int min = -1;
+        for (char punctuation : new char[]{'。', '！', '？', '.', '!', '?'}) {
+            int idx = text.indexOf(punctuation);
+            if (idx >= 0 && (min < 0 || idx < min)) {
+                min = idx;
+            }
+        }
+        return min;
+    }
+
+    private String normalizeLine(String line) {
+        return line == null ? "" : line
+                .replaceAll("^\\s*[#>*-]+\\s*", "")
+                .replace("`", "")
+                .trim();
+    }
+
+    private String cleanupExtractedField(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        String cleaned = value
+                .replaceAll("\\[(.*?)\\]\\((.*?)\\)", "$1")
+                .replaceAll("[*_~`]+", "")
+                .replaceAll("\\s+", " ")
+                .trim();
+        if (!StringUtils.hasText(cleaned)) {
+            return null;
+        }
+        if (cleaned.endsWith("。") || cleaned.endsWith("；") || cleaned.endsWith(";")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
+        }
+        return cleaned;
+    }
     private int normalizeLimit(Integer limit) {
         if (limit == null) {
             return 10;
