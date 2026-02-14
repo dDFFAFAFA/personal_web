@@ -121,6 +121,8 @@ public class StorageBackupService {
                 Files.copy(inputStream, restorePath);
             }
             paper.setFilePath(restorePath.toString());
+            String storageKey = resolveLocalBasePath().relativize(restorePath).toString();
+            paper.setFileStorageKey(storageKey);
             if (!StringUtils.hasText(paper.getFileName())) {
                 paper.setFileName(restorePath.getFileName().toString());
             }
@@ -178,6 +180,11 @@ public class StorageBackupService {
 
     private Path resolveRestorePath(Paper paper) {
         Path basePath = resolveLocalBasePath();
+        if (StringUtils.hasText(paper.getFileStorageKey())) {
+            Path storagePath = basePath.resolve(paper.getFileStorageKey()).normalize();
+            ensurePathWithinBase(storagePath, basePath, "本地恢复路径非法");
+            return storagePath;
+        }
         if (StringUtils.hasText(paper.getFilePath())) {
             Path configuredPath = toNormalizedPath(paper.getFilePath(), "本地恢复路径非法");
             ensurePathWithinBase(configuredPath, basePath, "本地恢复路径非法");
@@ -207,6 +214,18 @@ public class StorageBackupService {
     }
 
     private Path resolveBackupFilePath(Paper paper) {
+        if (StringUtils.hasText(paper.getFileStorageKey())) {
+            Path basePath = resolveLocalBasePath();
+            Path localFile = basePath.resolve(paper.getFileStorageKey()).normalize();
+            ensurePathWithinBase(localFile, basePath, "本地文件路径非法，无法备份");
+            if (!Files.exists(localFile)) {
+                throw new BusinessException(404, "本地文件不存在，无法备份");
+            }
+            if (!Files.isRegularFile(localFile)) {
+                throw new BusinessException(400, "本地文件路径非法，无法备份");
+            }
+            return localFile;
+        }
         if (!StringUtils.hasText(paper.getFilePath())) {
             throw new BusinessException(400, "论文本地文件不存在，无法备份");
         }
