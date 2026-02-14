@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,11 +88,13 @@ class PaperServiceTest {
 
     @Test
     void createPaperStoresFile() throws Exception {
+        AtomicReference<Paper> savedPaperRef = new AtomicReference<>();
         when(paperRepository.save(any(Paper.class))).thenAnswer(invocation -> {
             Paper saved = invocation.getArgument(0);
             if (saved.getId() == null) {
                 saved.setId(1L);
             }
+            savedPaperRef.set(saved);
             return saved;
         });
         MockMultipartFile file = new MockMultipartFile(
@@ -110,5 +113,6 @@ class PaperServiceTest {
         assertThat(Files.exists(stored)).isTrue();
         assertThat(response.getFileName()).isEqualTo("paper.pdf");
         assertThat(response.getFileSize()).isEqualTo(file.getSize());
+        assertThat(savedPaperRef.get().getFileStorageKey()).isEqualTo("1_paper.pdf");
     }
 }

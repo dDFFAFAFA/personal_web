@@ -246,7 +246,7 @@ public class PaperSummaryService {
     Path resolvePaperFilePath(Paper paper) {
         if (StringUtils.hasText(paper.getFileStorageKey())) {
             Path base = Paths.get(uploadPath).toAbsolutePath().normalize();
-            Path resolved = base.resolve(paper.getFileStorageKey()).normalize();
+            Path resolved = base.resolve(normalizeStorageKey(paper.getFileStorageKey())).normalize();
             if (!resolved.startsWith(base)) {
                 throw new BusinessException(400, "论文文件路径非法");
             }
@@ -259,6 +259,14 @@ public class PaperSummaryService {
         Path path = Paths.get(paper.getFilePath()).toAbsolutePath().normalize();
         ensureReadable(path);
         return path;
+    }
+
+    private String normalizeStorageKey(String storageKey) {
+        String normalized = storageKey.replace("\\", "/");
+        if (normalized.startsWith("/") || normalized.contains("..")) {
+            throw new BusinessException(400, "论文文件路径非法");
+        }
+        return normalized;
     }
 
     String extractPdfText(Path pdfPath) {

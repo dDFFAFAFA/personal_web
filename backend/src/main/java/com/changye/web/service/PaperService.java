@@ -224,7 +224,7 @@ public class PaperService {
             Path target = uploadDir.resolve(storedName);
             file.transferTo(target);
             paper.setFilePath(target.toString());
-            paper.setFileStorageKey(storedName);
+            paper.setFileStorageKey(normalizeStorageKey(storedName));
             paper.setFileName(originalName);
             paper.setFileSize(file.getSize());
         } catch (IOException ex) {
@@ -322,10 +322,18 @@ public class PaperService {
         return Paths.get(fileName).getFileName().toString();
     }
 
+    private String normalizeStorageKey(String storageKey) {
+        String normalized = storageKey.replace("\\", "/");
+        if (normalized.startsWith("/") || normalized.contains("..")) {
+            throw new BusinessException(400, "文件路径非法");
+        }
+        return normalized;
+    }
+
     private Path resolvePaperFilePath(Paper paper) {
         if (StringUtils.hasText(paper.getFileStorageKey())) {
             Path basePath = Paths.get(uploadPath).toAbsolutePath().normalize();
-            Path resolved = basePath.resolve(paper.getFileStorageKey()).normalize();
+            Path resolved = basePath.resolve(normalizeStorageKey(paper.getFileStorageKey())).normalize();
             if (!resolved.startsWith(basePath)) {
                 throw new BusinessException(400, "文件路径非法");
             }

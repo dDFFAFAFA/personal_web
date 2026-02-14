@@ -122,12 +122,13 @@ public class StorageBackupService {
             }
             paper.setFilePath(restorePath.toString());
             String storageKey = resolveLocalBasePath().relativize(restorePath).toString();
-            paper.setFileStorageKey(storageKey);
+            paper.setFileStorageKey(normalizeStorageKey(storageKey));
             if (!StringUtils.hasText(paper.getFileName())) {
                 paper.setFileName(restorePath.getFileName().toString());
             }
             paper.setFileSize(Files.size(restorePath));
             paper.setBackupStatus(BackupStatus.BACKED_UP);
+            paper.setBackupAt(OffsetDateTime.now());
             paper.setBackupError(null);
             paperRepository.save(paper);
             status = "SUCCESS";
@@ -181,7 +182,7 @@ public class StorageBackupService {
     private Path resolveRestorePath(Paper paper) {
         Path basePath = resolveLocalBasePath();
         if (StringUtils.hasText(paper.getFileStorageKey())) {
-            Path storagePath = basePath.resolve(paper.getFileStorageKey()).normalize();
+            Path storagePath = basePath.resolve(normalizeStorageKey(paper.getFileStorageKey(), "本地恢复路径非法")).normalize();
             ensurePathWithinBase(storagePath, basePath, "本地恢复路径非法");
             return storagePath;
         }
@@ -216,7 +217,7 @@ public class StorageBackupService {
     private Path resolveBackupFilePath(Paper paper) {
         if (StringUtils.hasText(paper.getFileStorageKey())) {
             Path basePath = resolveLocalBasePath();
-            Path localFile = basePath.resolve(paper.getFileStorageKey()).normalize();
+            Path localFile = basePath.resolve(normalizeStorageKey(paper.getFileStorageKey())).normalize();
             ensurePathWithinBase(localFile, basePath, "本地文件路径非法，无法备份");
             if (!Files.exists(localFile)) {
                 throw new BusinessException(404, "本地文件不存在，无法备份");
@@ -270,6 +271,18 @@ public class StorageBackupService {
             throw new BusinessException(400, "文件名非法");
         }
         return resolved;
+    }
+
+    private String normalizeStorageKey(String storageKey) {
+        return normalizeStorageKey(storageKey, "本地文件路径非法，无法备份");
+    }
+
+    private String normalizeStorageKey(String storageKey, String errorMessage) {
+        String normalized = storageKey.replace("\\", "/");
+        if (normalized.startsWith("/") || normalized.contains("..")) {
+            throw new BusinessException(400, errorMessage);
+        }
+        return normalized;
     }
 
     private BusinessException mapStorageException(Exception ex, String defaultMessage) {

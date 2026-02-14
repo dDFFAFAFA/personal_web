@@ -116,6 +116,20 @@ class StorageBackupServiceTest {
     }
 
     @Test
+    void backupPaperUsesStorageKeyWhenFilePathMissing() throws Exception {
+        Path file = Files.createFile(tempDir.resolve("storage-key-paper.pdf"));
+        Paper paper = buildPaper(30L, null, "paper.pdf", null);
+        paper.setFileStorageKey("storage-key-paper.pdf");
+        mockPaper(paper);
+
+        storageBackupService.backupPaper(30L);
+
+        assertThat(paper.getBackupStatus()).isEqualTo(BackupStatus.BACKED_UP);
+        assertThat(paper.getBackupError()).isNull();
+        verify(ossClient).putObject("bucket", "papers/30/paper.pdf", file.toFile());
+    }
+
+    @Test
     void backupPaperReturns400WhenOssConfigMissing() {
         ReflectionTestUtils.setField(storageBackupService, "ossBucket", "");
 
@@ -197,6 +211,8 @@ class StorageBackupServiceTest {
         Path restoredFile = tempDir.resolve("8_paper.pdf");
         assertThat(Files.exists(restoredFile)).isTrue();
         assertThat(paper.getBackupStatus()).isEqualTo(BackupStatus.BACKED_UP);
+        assertThat(paper.getBackupAt()).isNotNull();
+        assertThat(paper.getFileStorageKey()).isEqualTo("8_paper.pdf");
         assertThat(paper.getBackupError()).isNull();
     }
 
