@@ -83,9 +83,12 @@ public class RepoSyncService {
                 .orElseThrow(() -> new BusinessException(400, "仓库配置不存在，请先保存配置"));
         ensureConfigReady(config);
 
-        Path keyPath = Paths.get(sshPrivateKeyPath);
-        if (!Files.exists(keyPath)) {
-            throw new BusinessException(400, "SSH 私钥文件不存在，请先在服务器部署私钥");
+        boolean useSsh = isSshRepoUrl(config.getRepoUrl());
+        if (useSsh) {
+            Path keyPath = Paths.get(sshPrivateKeyPath);
+            if (!Files.exists(keyPath)) {
+                throw new BusinessException(400, "SSH 私钥文件不存在，请先在服务器部署私钥");
+            }
         }
 
         Path targetPath = resolveTargetPath(config.getTargetDir());
@@ -96,13 +99,13 @@ public class RepoSyncService {
                 mode = RepoSyncMode.PULL;
                 result = runGitCommand(List.of(
                         "git", "-C", targetPath.toString(), "pull", "origin", config.getBranchName()
-                ));
+                ), useSsh);
             } else {
                 ensureCloneDirectoryAvailable(targetPath);
                 mode = RepoSyncMode.CLONE;
                 result = runGitCommand(List.of(
                         "git", "clone", "--branch", config.getBranchName(), config.getRepoUrl(), targetPath.toString()
-                ));
+                ), useSsh);
             }
         } catch (IOException ex) {
             log.error("Repo sync process execution failed", ex);
@@ -189,6 +192,14 @@ public class RepoSyncService {
         }
     }
 
+    private boolean isSshRepoUrl(String repoUrl) {
+        if (!StringUtils.hasText(repoUrl)) {
+            return false;
+        }
+        String lower = repoUrl.trim().toLowerCase();
+        return lower.startsWith("git@") || lower.startsWith("ssh://");
+    }
+
     private Path resolveTargetPath(String configuredTargetDir) {
         Path configured = Paths.get(configuredTargetDir);
         if (configured.isAbsolute()) {
@@ -212,13 +223,17 @@ public class RepoSyncService {
         }
     }
 
-    private CommandResult runGitCommand(List<String> command) throws IOException {
+    private CommandResult runGitCommand(List<String> command, boolean useSsh) throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder(new ArrayList<>(command));
         processBuilder.redirectErrorStream(true);
-        processBuilder.environment().put(
-                "GIT_SSH_COMMAND",
-                "ssh -i " + sshPrivateKeyPath + " -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
-        );
+        if (useSsh) {
+            processBuilder.environment().put(
+                    "GIT_SSH_COMMAND",
+                    "ssh -i " + sshPrivateKeyPath + " -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+            );
+        } else {
+            processBuilder.environment().remove("GIT_SSH_COMMAND");
+        }
 
         Process process = processBuilder.start();
         String output;

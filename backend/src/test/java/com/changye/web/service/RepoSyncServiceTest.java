@@ -6,9 +6,13 @@ import com.changye.web.dto.response.RepoConfigResponse;
 import com.changye.web.model.RepoConfig;
 import com.changye.web.model.enums.RepoProvider;
 import com.changye.web.repository.RepoConfigRepository;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,6 +30,9 @@ class RepoSyncServiceTest {
 
     @Mock
     private RepoConfigRepository repoConfigRepository;
+
+    @TempDir
+    Path tempDir;
 
     private RepoSyncService repoSyncService;
 
@@ -69,6 +76,55 @@ class RepoSyncServiceTest {
                     assertThat(be.getMessage()).isEqualTo("仅支持 GitHub/Gitee 的 SSH 或 HTTPS 仓库地址");
                 });
         verify(repoConfigRepository, never()).save(any());
+    }
+
+    @Test
+    void syncWithSshUrlWithoutPrivateKeyThrowsBadRequest() {
+        ReflectionTestUtils.setField(repoSyncService, "sshPrivateKeyPath", "/tmp/nonexistent_key_123456");
+
+        RepoConfig config = RepoConfig.builder()
+                .id(1L)
+                .provider(RepoProvider.GITHUB)
+                .repoUrl("git@github.com:foo/bar.git")
+                .branchName("main")
+                .targetDir(tempDir.resolve("repo-a").toString())
+                .build();
+        when(repoConfigRepository.findById(1L)).thenReturn(Optional.of(config));
+
+        assertThatThrownBy(() -> repoSyncService.sync())
+                .isInstanceOf(BusinessException.class)
+                .satisfies(ex -> {
+                    BusinessException be = (BusinessException) ex;
+                    assertThat(be.getCode()).isEqualTo(400);
+                    assertThat(be.getMessage()).contains("SSH 私钥文件不存在");
+                });
+    }
+
+    @Test
+    void syncWithHttpsUrlWithoutPrivateKeyDoesNotFailOnKeyCheck() throws IOException {
+        ReflectionTestUtils.setField(repoSyncService, "sshPrivateKeyPath", "/tmp/nonexistent_key_123456");
+
+        Path repoDir = tempDir.resolve("repo-b");
+        Files.createDirectories(repoDir);
+        Files.createFile(repoDir.resolve(".git"));
+
+        RepoConfig config = RepoConfig.builder()
+                .id(1L)
+                .provider(RepoProvider.GITHUB)
+                .repoUrl("https://github.com/foo/bar.git")
+                .branchName("main")
+                .targetDir(repoDir.toString())
+                .build();
+        when(repoConfigRepository.findById(1L)).thenReturn(Optional.of(config));
+        when(repoConfigRepository.save(any(RepoConfig.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertThatThrownBy(() -> repoSyncService.sync())
+                .isInstanceOf(BusinessException.class)
+                .satisfies(ex -> {
+                    BusinessException be = (BusinessException) ex;
+                    assertThat(be.getCode()).isEqualTo(500);
+                    assertThat(be.getMessage()).doesNotContain("SSH 私钥文件不存在");
+                });
     }
 
     @Test
