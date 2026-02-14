@@ -64,7 +64,18 @@
                   <span class="summary-time">时间：{{ formatTime(item.generatedAt) }}</span>
                 </div>
               </div>
-              <el-button text type="primary" @click="goPaperDetail(item.paperId)">进入详情</el-button>
+              <div class="summary-item-actions">
+                <el-button
+                  text
+                  type="primary"
+                  :loading="summaryDownloadLoading[item.paperId]"
+                  :disabled="!canDownloadSummary(item)"
+                  @click="handleDownloadSummary(item)"
+                >
+                  下载 .md
+                </el-button>
+                <el-button text type="primary" @click="goPaperDetail(item.paperId)">进入详情</el-button>
+              </div>
             </div>
           </div>
         </el-card>
@@ -77,7 +88,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getHealth } from '../../api/health'
-import { getHomeSummaries } from '../../api/paper'
+import { downloadPaperSummary, getHomeSummaries } from '../../api/paper'
 import type { HomeSummaryItem, PaperSummaryStatus } from '../../types/paper'
 import { ElMessage } from 'element-plus'
 
@@ -87,6 +98,7 @@ const serverTime = ref('')
 const summaryLoading = ref(false)
 const summaryError = ref('')
 const summaries = ref<HomeSummaryItem[]>([])
+const summaryDownloadLoading = ref<Record<number, boolean>>({})
 
 const fetchHealth = async () => {
   try {
@@ -135,6 +147,33 @@ const getSummaryStatusType = (status: PaperSummaryStatus) => {
   if (status === 'FAILED') return 'danger'
   if (status === 'GENERATING' || status === 'QUEUED' || status === 'PENDING') return 'warning'
   return 'info'
+}
+
+const canDownloadSummary = (item: HomeSummaryItem) => {
+  return item.status === 'SUCCESS'
+}
+
+const handleDownloadSummary = async (item: HomeSummaryItem) => {
+  if (!canDownloadSummary(item)) {
+    ElMessage.warning('当前概要尚未生成完成，暂不可下载')
+    return
+  }
+
+  summaryDownloadLoading.value[item.paperId] = true
+  try {
+    const blob = await downloadPaperSummary(item.paperId)
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `paper_${item.paperId}_summary.md`
+    link.click()
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('概要已下载')
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error, '下载概要失败，请稍后重试'))
+  } finally {
+    summaryDownloadLoading.value[item.paperId] = false
+  }
 }
 
 const formatTime = (value?: string) => {
@@ -209,5 +248,11 @@ onMounted(() => {
 .summary-time {
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+.summary-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>
