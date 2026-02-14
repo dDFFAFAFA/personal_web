@@ -41,6 +41,9 @@ public class Paper {
     @Column(name = "file_path")
     private String filePath;
 
+    @Column(name = "file_storage_key", length = 600)
+    private String fileStorageKey;
+
     @Column(name = "file_name")
     private String fileName;
 
