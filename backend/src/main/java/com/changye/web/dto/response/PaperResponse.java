@@ -1,6 +1,8 @@
 package com.changye.web.dto.response;
 
 import com.changye.web.model.enums.ReadingStatus;
+
+import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,6 +25,14 @@ public class PaperResponse {
     private ReadingStatus readingStatus;
     private Boolean starred;
     private String abstractText;
+
+    // Phase 2A: Metadata Enrichment
+    private String ccfRank;
+    private String jcrQuartile;
+    private BigDecimal impactFactor;
+    private Integer citationCount;
+    private String paperUrl;
+
     private List<TagResponse> tags;
     private List<NoteSummaryResponse> notes; // Only in detail view
     private Integer noteCount;

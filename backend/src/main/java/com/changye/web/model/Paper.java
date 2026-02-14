@@ -1,6 +1,7 @@
 package com.changye.web.model;
 
 import com.changye.web.model.enums.ReadingStatus;
+import java.math.BigDecimal;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -55,6 +56,24 @@ public class Paper {
 
     @Column(name = "abstract_text", columnDefinition = "TEXT")
     private String abstractText;
+
+    // --- Phase 2A: Metadata Enrichment ---
+
+    @Column(name = "ccf_rank", length = 10)
+    private String ccfRank; // "A", "B", "C"
+
+    @Column(name = "jcr_quartile", length = 10)
+    private String jcrQuartile; // "Q1", "Q2", "Q3", "Q4"
+
+    @Column(name = "impact_factor", precision = 6, scale = 3)
+    private BigDecimal impactFactor;
+
+    @Column(name = "citation_count")
+    @Builder.Default
+    private Integer citationCount = 0;
+
+    @Column(name = "paper_url", length = 500)
+    private String paperUrl; // Original paper link (e.g. arXiv URL)
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "paper_tags", joinColumns = @JoinColumn(name = "paper_id", foreignKey = @ForeignKey(name = "fk_paper_tags_paper")), inverseJoinColumns = @JoinColumn(name = "tag_id", foreignKey = @ForeignKey(name = "fk_paper_tags_tag")))
