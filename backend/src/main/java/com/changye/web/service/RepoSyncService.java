@@ -9,6 +9,8 @@ import com.changye.web.model.enums.RepoSyncMode;
 import com.changye.web.model.enums.RepoSyncStatus;
 import com.changye.web.repository.RepoConfigRepository;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,7 +73,8 @@ public class RepoSyncService {
         }
         config.setAppBaseUrl(StringUtils.hasText(request.getAppBaseUrl()) ? request.getAppBaseUrl().trim() : null);
         RepoConfig saved = repoConfigRepository.save(config);
-        log.info("Repo config updated provider={} repoUrl={}", saved.getProvider(), saved.getRepoUrl());
+        log.info("Repo config updated provider={} branch={} targetDir={}",
+                saved.getProvider(), saved.getBranchName(), saved.getTargetDir());
         return toConfigResponse(saved);
     }
 
@@ -120,9 +123,10 @@ public class RepoSyncService {
                     .build();
         }
 
-        String error = "同步失败: " + trimMessage(result.output);
+        String error = "同步失败: " + sanitizeAndTrimMessage(result.output);
         updateSyncResult(config, RepoSyncStatus.FAILED, mode, error, now);
-        log.warn("Repo sync failed mode={} exitCode={} output={}", mode, result.exitCode, result.output);
+        log.warn("Repo sync failed mode={} exitCode={} output={}",
+                mode, result.exitCode, sanitizeAndTrimMessage(result.output));
         throw new BusinessException(500, error);
     }
 
@@ -158,10 +162,30 @@ public class RepoSyncService {
             throw new BusinessException(400, "仓库地址不能为空");
         }
         String value = repoUrl.trim();
-        boolean ssh = value.startsWith("git@") || value.startsWith("ssh://");
-        boolean https = value.startsWith("https://github.com/") || value.startsWith("https://gitee.com/");
-        if (!(ssh || https)) {
+        if (!(isAllowedHttpsUrl(value) || isAllowedSshUrl(value))) {
             throw new BusinessException(400, "仅支持 GitHub/Gitee 的 SSH 或 HTTPS 仓库地址");
+        }
+    }
+
+    private boolean isAllowedHttpsUrl(String repoUrl) {
+        String lower = repoUrl.toLowerCase();
+        return lower.startsWith("https://github.com/") || lower.startsWith("https://gitee.com/");
+    }
+
+    private boolean isAllowedSshUrl(String repoUrl) {
+        String lower = repoUrl.toLowerCase();
+        if (lower.startsWith("git@github.com:") || lower.startsWith("git@gitee.com:")) {
+            return true;
+        }
+        if (!lower.startsWith("ssh://")) {
+            return false;
+        }
+        try {
+            URI uri = new URI(repoUrl);
+            String host = uri.getHost();
+            return "github.com".equalsIgnoreCase(host) || "gitee.com".equalsIgnoreCase(host);
+        } catch (URISyntaxException ex) {
+            return false;
         }
     }
 
@@ -219,7 +243,7 @@ public class RepoSyncService {
                                   OffsetDateTime syncedAt) {
         config.setLastSyncStatus(status);
         config.setLastSyncMode(mode);
-        config.setLastSyncMessage(trimMessage(message));
+        config.setLastSyncMessage(sanitizeAndTrimMessage(message));
         config.setLastSyncAt(syncedAt);
         repoConfigRepository.save(config);
     }
@@ -261,12 +285,21 @@ public class RepoSyncService {
         return "***/" + fileName;
     }
 
-    private String trimMessage(String message) {
+    private String sanitizeAndTrimMessage(String message) {
         if (!StringUtils.hasText(message)) {
             return "";
         }
-        String value = message.trim();
-        return value.length() > 1000 ? value.substring(0, 1000) : value;
+        String sanitized = message.trim()
+                .replace(sshPrivateKeyPath, maskPath(sshPrivateKeyPath))
+                .replaceAll("(?i)(authorization:\\s*bearer\\s+)[^\\s]+", "$1***")
+                .replaceAll("(?i)(access_token=)[^\\s&]+", "$1***")
+                .replaceAll("(?i)(token=)[^\\s&]+", "$1***")
+                .replaceAll("(?i)(password=)[^\\s&]+", "$1***")
+                .replaceAll("(?i)(https?://)([^\\s/@:]+):([^@\\s]+)@", "$1$2:***@");
+        if (sanitized.length() > 1000) {
+            sanitized = sanitized.substring(0, 1000);
+        }
+        return sanitized;
     }
 
     private record CommandResult(int exitCode, String output) {

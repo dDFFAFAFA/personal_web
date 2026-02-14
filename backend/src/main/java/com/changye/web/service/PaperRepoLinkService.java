@@ -139,6 +139,20 @@ public class PaperRepoLinkService {
                 .build();
     }
 
+    public PaperRepoLinkResponse rejectLink(Long paperId, Long candidateId) {
+        findPaper(paperId);
+        PaperRepoLink link = paperRepoLinkRepository.findByPaperIdAndId(paperId, candidateId)
+                .orElseThrow(() -> new BusinessException(404, "候选链接不存在"));
+        if (link.getStatus() == PaperRepoLinkStatus.APPLIED) {
+            throw new BusinessException(400, "已应用链接不可拒绝");
+        }
+        if (link.getStatus() != PaperRepoLinkStatus.REJECTED) {
+            link.setStatus(PaperRepoLinkStatus.REJECTED);
+            paperRepoLinkRepository.save(link);
+        }
+        return toResponse(link);
+    }
+
     private List<PaperRepoLink> resolveApplyTargets(Long paperId, PaperRepoLinksApplyRequest request) {
         if (request != null && request.getCandidateIds() != null && !request.getCandidateIds().isEmpty()) {
             return paperRepoLinkRepository.findByPaperIdAndIdIn(paperId, request.getCandidateIds());

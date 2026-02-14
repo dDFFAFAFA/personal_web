@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PaperRepoLinkRepository extends JpaRepository<PaperRepoLink, Long> {
     Optional<PaperRepoLink> findByPaperIdAndUrl(Long paperId, String url);
 
+    Optional<PaperRepoLink> findByPaperIdAndId(Long paperId, Long id);
+
     List<PaperRepoLink> findByPaperIdOrderByUpdatedAtDesc(Long paperId);
 
     List<PaperRepoLink> findByPaperIdAndStatusOrderByUpdatedAtDesc(Long paperId, PaperRepoLinkStatus status);

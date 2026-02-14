@@ -138,4 +138,46 @@ class PaperRepoLinkServiceTest {
                 });
         verify(paperCodeEntryRepository, never()).save(any());
     }
+
+    @Test
+    void rejectCandidateMarksStatusAsRejected() {
+        Paper paper = Paper.builder().id(4L).title("Paper").build();
+        PaperRepoLink link = PaperRepoLink.builder()
+                .id(40L)
+                .paper(paper)
+                .url("https://github.com/foo/bar")
+                .provider(PaperRepoLinkProvider.GITHUB)
+                .status(PaperRepoLinkStatus.CANDIDATE)
+                .build();
+        when(paperRepository.findById(4L)).thenReturn(Optional.of(paper));
+        when(paperRepoLinkRepository.findByPaperIdAndId(4L, 40L)).thenReturn(Optional.of(link));
+
+        PaperRepoLinkResponse response = paperRepoLinkService.rejectLink(4L, 40L);
+
+        assertThat(response.getStatus()).isEqualTo(PaperRepoLinkStatus.REJECTED);
+        verify(paperRepoLinkRepository).save(link);
+    }
+
+    @Test
+    void rejectCandidateFailsWhenAlreadyApplied() {
+        Paper paper = Paper.builder().id(5L).title("Paper").build();
+        PaperRepoLink link = PaperRepoLink.builder()
+                .id(50L)
+                .paper(paper)
+                .url("https://gitee.com/foo/bar")
+                .provider(PaperRepoLinkProvider.GITEE)
+                .status(PaperRepoLinkStatus.APPLIED)
+                .build();
+        when(paperRepository.findById(5L)).thenReturn(Optional.of(paper));
+        when(paperRepoLinkRepository.findByPaperIdAndId(5L, 50L)).thenReturn(Optional.of(link));
+
+        assertThatThrownBy(() -> paperRepoLinkService.rejectLink(5L, 50L))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(ex -> {
+                    BusinessException businessException = (BusinessException) ex;
+                    assertThat(businessException.getCode()).isEqualTo(400);
+                    assertThat(businessException.getMessage()).isEqualTo("已应用链接不可拒绝");
+                });
+        verify(paperRepoLinkRepository, never()).save(any());
+    }
 }
