@@ -93,6 +93,17 @@ class PaperControllerTest {
     }
 
     @Test
+    void listHomeSummariesReturnsEmptyList() throws Exception {
+        when(paperSummaryService.listHomeSummaries(10)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/home/summaries"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
     void createPaperReturnsResponse() throws Exception {
         PaperResponse response = PaperResponse.builder()
                 .id(2L)

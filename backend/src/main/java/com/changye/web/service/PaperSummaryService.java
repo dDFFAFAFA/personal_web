@@ -21,6 +21,8 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -145,6 +147,16 @@ public class PaperSummaryService {
             throw new BusinessException(404, "摘要尚未生成成功");
         }
         return summary.getMarkdown();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaperSummaryResponse> listHomeSummaries(Integer limit) {
+        Pageable pageable = PageRequest.of(0, normalizeLimit(limit));
+        return paperSummaryRepository
+                .findByStatusOrderByGeneratedAtDesc(PaperSummaryStatus.SUCCESS, pageable)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     private Paper findPaper(Long paperId) {
@@ -314,6 +326,19 @@ public class PaperSummaryService {
                 .generatedAt(summary.getGeneratedAt())
                 .error(summary.getErrorMessage())
                 .build();
+    }
+
+    private int normalizeLimit(Integer limit) {
+        if (limit == null) {
+            return 10;
+        }
+        if (limit < 1) {
+            return 1;
+        }
+        if (limit > 50) {
+            return 50;
+        }
+        return limit;
     }
 
     private String trimError(String message) {

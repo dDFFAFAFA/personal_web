@@ -15,6 +15,8 @@ import com.changye.web.repository.PaperSummaryRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -175,5 +177,37 @@ class PaperSummaryServiceTest {
         assertThat(response.getSummaryId()).isEqualTo(200L);
         assertThat(response.getStatus()).isEqualTo(PaperSummaryStatus.SUCCESS);
         assertThat(response.getMarkdown()).isEqualTo("# Summary");
+    }
+
+    @Test
+    void listHomeSummariesReturnsEmptyList() {
+        when(paperSummaryRepository.findByStatusOrderByGeneratedAtDesc(any(), any())).thenReturn(List.of());
+
+        List<PaperSummaryResponse> response = paperSummaryService.listHomeSummaries(10);
+
+        assertThat(response).isEmpty();
+    }
+
+    @Test
+    void listHomeSummariesReturnsMappedResult() {
+        Paper paper = Paper.builder().id(5L).title("Home Summary").build();
+        PaperSummary summary = PaperSummary.builder()
+                .id(300L)
+                .paper(paper)
+                .status(PaperSummaryStatus.SUCCESS)
+                .provider(AiProvider.QWEN)
+                .modelName("qwen-plus")
+                .markdownContent("## Digest")
+                .generatedAt(OffsetDateTime.now())
+                .build();
+        when(paperSummaryRepository.findByStatusOrderByGeneratedAtDesc(any(), any())).thenReturn(List.of(summary));
+
+        List<PaperSummaryResponse> response = paperSummaryService.listHomeSummaries(10);
+
+        assertThat(response).hasSize(1);
+        assertThat(response.get(0).getPaperId()).isEqualTo(5L);
+        assertThat(response.get(0).getSummaryId()).isEqualTo(300L);
+        assertThat(response.get(0).getStatus()).isEqualTo(PaperSummaryStatus.SUCCESS);
+        assertThat(response.get(0).getMarkdown()).isEqualTo("## Digest");
     }
 }
