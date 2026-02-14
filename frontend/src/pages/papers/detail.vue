@@ -111,11 +111,14 @@
                     <span class="label">备份状态:</span>
                     <el-tag :type="backupStatusType" size="small">{{ backupStatusLabel }}</el-tag>
                   </div>
+                  <div class="backup-time" v-if="backupStatusHint">
+                    {{ backupStatusHint }}
+                  </div>
                   <div class="backup-time" v-if="backupState?.backupAt || paper.backupAt">
                     最近备份: {{ formatDate(backupState?.backupAt || paper.backupAt || '') }}
                   </div>
-                  <div class="backup-time error" v-if="backupState?.backupError || paper.backupError">
-                    {{ backupState?.backupError || paper.backupError }}
+                  <div class="backup-time error" v-if="backupErrorMessage">
+                    失败原因：{{ backupErrorMessage }}
                   </div>
                   <el-button
                     type="warning"
@@ -123,25 +126,37 @@
                     style="width: 100%; margin-left: 0; margin-top: 8px;"
                     @click="handleBackupToOss"
                     :loading="backupLoading"
+                    :disabled="backupDisabled"
                   >
                     备份到 OSS
                   </el-button>
+                  <div class="action-tip" v-if="backupDisabledReason">
+                    {{ backupDisabledReason }}
+                  </div>
                   <el-button
                     plain
                     style="width: 100%; margin-left: 0; margin-top: 8px;"
                     @click="handleRestoreFromOss"
                     :loading="restoreLoading"
+                    :disabled="restoreDisabled"
                   >
                     从 OSS 恢复
                   </el-button>
+                  <div class="action-tip" v-if="restoreDisabledReason">
+                    {{ restoreDisabledReason }}
+                  </div>
                   <el-button
                     plain
                     style="width: 100%; margin-left: 0; margin-top: 8px;"
                     @click="handleSyncRepo"
                     :loading="syncRepoLoading"
+                    :disabled="syncRepoDisabled"
                   >
                     同步仓库（Clone/Pull）
                   </el-button>
+                  <div class="action-tip" v-if="syncRepoDisabledReason">
+                    {{ syncRepoDisabledReason }}
+                  </div>
                 </div>
               </div>
             </el-card>
@@ -246,6 +261,7 @@ const paper = ref<Paper>({} as Paper)
 const notes = ref<Note[]>([])
 const activeTab = ref('details')
 const backupState = ref<PaperBackupStatus | null>(null)
+const lastReadingStatus = ref<Paper['readingStatus']>('UNREAD')
 
 const pdfUrl = computed(() => `/api/v1/papers/${paperId}/file`)
 
@@ -257,26 +273,61 @@ const fetchData = async () => {
       getPaperNotes(paperId),
       getPaperBackupStatus(paperId)
     ])
-    if (paperRes.code === 200) paper.value = paperRes.data
+    if (paperRes.code === 200) {
+      paper.value = paperRes.data
+      lastReadingStatus.value = paperRes.data.readingStatus
+    }
     if (notesRes.code === 200) notes.value = notesRes.data
     if (backupRes.code === 200) backupState.value = backupRes.data
   } catch (error) {
     console.error(error)
-    ElMessage.error('获取详情失败')
+    ElMessage.error(getErrorMessage(error, '获取详情失败，请刷新后重试'))
   } finally {
     loading.value = false
   }
 }
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const apiMsg = (error as any)?.response?.data?.message
+  const msg = (typeof apiMsg === 'string' && apiMsg.trim()) || (error as any)?.message
+  return typeof msg === 'string' && msg.trim() ? msg.trim() : fallback
+}
+
+const refreshBackupStatus = async (showMessageOnError = false) => {
+  try {
+    const res = await getPaperBackupStatus(paperId)
+    if (res.code === 200) {
+      backupState.value = res.data
+      paper.value.backupStatus = res.data.backupStatus
+      paper.value.backupAt = res.data.backupAt
+      paper.value.backupError = res.data.backupError
+    }
+  } catch (error) {
+    if (showMessageOnError) {
+      ElMessage.error(getErrorMessage(error, '刷新备份状态失败，请重试'))
+    }
+  }
+}
+
 const handleStatusChange = async (val: string) => {
-  await updatePaperStatus(paperId, val)
-  ElMessage.success('状态已更新')
+  try {
+    await updatePaperStatus(paperId, val)
+    lastReadingStatus.value = val as Paper['readingStatus']
+    ElMessage.success('状态已更新')
+  } catch (error) {
+    paper.value.readingStatus = lastReadingStatus.value
+    ElMessage.error(getErrorMessage(error, '状态更新失败，请重试'))
+  }
 }
 
 const toggleStar = async () => {
   const newVal = !paper.value.starred
-  await togglePaperStar(paperId, newVal)
-  paper.value.starred = newVal
+  try {
+    await togglePaperStar(paperId, newVal)
+    paper.value.starred = newVal
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error, '收藏状态更新失败，请稍后重试'))
+  }
 }
 
 const handleDelete = () => {
@@ -285,6 +336,11 @@ const handleDelete = () => {
       await deletePaper(paperId)
       router.push('/papers')
       ElMessage.success('删除成功')
+    })
+    .catch((error) => {
+      if (error !== 'cancel' && error !== 'close') {
+        ElMessage.error(getErrorMessage(error, '删除失败，请重试'))
+      }
     })
 }
 
@@ -296,6 +352,7 @@ const createNote = async () => {
     }
   } catch (error) {
     console.error(error)
+    ElMessage.error(getErrorMessage(error, '创建笔记失败，请稍后重试'))
   }
 }
 
@@ -327,6 +384,7 @@ const handleUpdateMetadata = async () => {
     }
   } catch (error) {
     console.error(error)
+    ElMessage.error(getErrorMessage(error, '更新元数据失败，请稍后重试'))
   } finally {
     enrichLoading.value = false
   }
@@ -345,21 +403,73 @@ const handleCopyBibtex = async () => {
   }
 }
 
+const currentBackupStatus = computed(() => {
+  if (backupLoading.value || restoreLoading.value) return 'IN_PROGRESS'
+  return backupState.value?.backupStatus || paper.value.backupStatus || 'NOT_BACKED_UP'
+})
+
 const backupStatusLabel = computed(() => {
-  const status = backupState.value?.backupStatus || paper.value.backupStatus
+  const status = currentBackupStatus.value
+  if (status === 'IN_PROGRESS') return '进行中'
   if (status === 'BACKED_UP') return '已备份'
   if (status === 'FAILED') return '备份失败'
   return '未备份'
 })
 
 const backupStatusType = computed(() => {
-  const status = backupState.value?.backupStatus || paper.value.backupStatus
+  const status = currentBackupStatus.value
+  if (status === 'IN_PROGRESS') return 'warning'
   if (status === 'BACKED_UP') return 'success'
   if (status === 'FAILED') return 'danger'
   return 'info'
 })
 
+const backupStatusHint = computed(() => {
+  if (backupLoading.value) return '备份请求已提交，请等待完成。'
+  if (restoreLoading.value) return '恢复中，完成后会自动刷新备份状态。'
+  if (currentBackupStatus.value === 'FAILED') return '请先检查失败原因，修复后再重试。'
+  if (currentBackupStatus.value === 'NOT_BACKED_UP') return '建议先执行一次备份，确保可恢复。'
+  return ''
+})
+
+const backupErrorMessage = computed(() => {
+  const err = backupState.value?.backupError || paper.value.backupError
+  return typeof err === 'string' ? err.trim() : ''
+})
+
+const backupDisabledReason = computed(() => {
+  if (loading.value) return '详情加载中，请稍后。'
+  if (backupLoading.value) return '备份进行中，请勿重复点击。'
+  if (restoreLoading.value) return '正在恢复文件，暂不可备份。'
+  if (syncRepoLoading.value) return '仓库同步中，请稍后再备份。'
+  if (!paper.value.fileName && !paper.value.filePath) return '未检测到论文文件，无法执行备份。'
+  return ''
+})
+const backupDisabled = computed(() => Boolean(backupDisabledReason.value))
+
+const restoreDisabledReason = computed(() => {
+  if (loading.value) return '详情加载中，请稍后。'
+  if (restoreLoading.value) return '恢复进行中，请勿重复点击。'
+  if (backupLoading.value) return '备份进行中，暂不可恢复。'
+  if (syncRepoLoading.value) return '仓库同步中，请稍后再恢复。'
+  if (currentBackupStatus.value !== 'BACKED_UP') return '暂无可恢复备份，请先完成一次成功备份。'
+  return ''
+})
+const restoreDisabled = computed(() => Boolean(restoreDisabledReason.value))
+
+const syncRepoDisabledReason = computed(() => {
+  if (loading.value) return '详情加载中，请稍后。'
+  if (syncRepoLoading.value) return '仓库同步进行中，请勿重复点击。'
+  if (backupLoading.value || restoreLoading.value) return '备份或恢复进行中，稍后再同步仓库。'
+  return ''
+})
+const syncRepoDisabled = computed(() => Boolean(syncRepoDisabledReason.value))
+
 const handleBackupToOss = async () => {
+  if (backupDisabled.value) {
+    ElMessage.warning(backupDisabledReason.value)
+    return
+  }
   backupLoading.value = true
   try {
     const res = await backupPaperToOss(paperId)
@@ -372,12 +482,18 @@ const handleBackupToOss = async () => {
     }
   } catch (error) {
     console.error(error)
+    ElMessage.error(getErrorMessage(error, '备份失败，请检查 OSS 配置后重试'))
   } finally {
     backupLoading.value = false
+    await refreshBackupStatus(true)
   }
 }
 
 const handleRestoreFromOss = async () => {
+  if (restoreDisabled.value) {
+    ElMessage.warning(restoreDisabledReason.value)
+    return
+  }
   restoreLoading.value = true
   try {
     const res = await restorePaperFromOss(paperId)
@@ -390,12 +506,18 @@ const handleRestoreFromOss = async () => {
     }
   } catch (error) {
     console.error(error)
+    ElMessage.error(getErrorMessage(error, '恢复失败，请先确认备份存在且 OSS 可访问'))
   } finally {
     restoreLoading.value = false
+    await refreshBackupStatus(true)
   }
 }
 
 const handleSyncRepo = async () => {
+  if (syncRepoDisabled.value) {
+    ElMessage.warning(syncRepoDisabledReason.value)
+    return
+  }
   syncRepoLoading.value = true
   try {
     const res = await syncRepo()
@@ -404,6 +526,7 @@ const handleSyncRepo = async () => {
     }
   } catch (error) {
     console.error(error)
+    ElMessage.error(getErrorMessage(error, '仓库同步失败，请先检查设置页仓库配置'))
   } finally {
     syncRepoLoading.value = false
   }
@@ -499,6 +622,12 @@ onMounted(() => {
 
 .backup-time.error {
   color: #f56c6c;
+}
+
+.action-tip {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .notes-header {
