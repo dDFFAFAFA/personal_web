@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -93,7 +94,7 @@ class PaperSummaryServiceTest {
         when(paperSummaryRepository.findByPaperId(1L)).thenReturn(Optional.empty());
         when(aiProviderConfigRepository.findById(AiProvider.DEEPSEEK)).thenReturn(Optional.of(deepseek));
         doReturn("This is pdf content").when(paperSummaryService).extractPdfText(file);
-        doReturn("# Structured Summary").when(paperSummaryService).callProvider(any(), any());
+        doReturn("模型名称：DeepSeek-R1\n一句话精要：这是生成的一句话总结。\n# Structured Summary").when(paperSummaryService).callProvider(any(), any());
 
         PaperSummaryGenerateRequest request = new PaperSummaryGenerateRequest();
         request.setProvider(AiProvider.DEEPSEEK);
@@ -102,7 +103,10 @@ class PaperSummaryServiceTest {
 
         assertThat(response.getPaperId()).isEqualTo(1L);
         assertThat(response.getStatus()).isEqualTo(PaperSummaryStatus.SUCCESS);
-        verify(paperSummaryRepository, org.mockito.Mockito.times(2)).save(any(PaperSummary.class));
+        ArgumentCaptor<PaperSummary> captor = ArgumentCaptor.forClass(PaperSummary.class);
+        verify(paperSummaryRepository, org.mockito.Mockito.times(2)).save(captor.capture());
+        PaperSummary saved = captor.getAllValues().get(1);
+        assertThat(saved.getOneSentence()).isEqualTo("这是生成的一句话总结。");
     }
 
     @Test
@@ -198,7 +202,8 @@ class PaperSummaryServiceTest {
                 .status(PaperSummaryStatus.SUCCESS)
                 .provider(AiProvider.QWEN)
                 .modelName("qwen-plus")
-                .markdownContent("模型名称：Llama-3.1-70B-Instruct\n一句话精要：该方法在公开数据集上显著提升精度。")
+                .markdownContent("模型名称：Llama-3.1-70B-Instruct\n# Structured")
+                .oneSentence("该方法在公开数据集上显著提升精度。")
                 .generatedAt(OffsetDateTime.now())
                 .build();
         when(paperSummaryRepository.findByStatusOrderByGeneratedAtDesc(any(), any())).thenReturn(List.of(summary));
@@ -210,7 +215,7 @@ class PaperSummaryServiceTest {
         assertThat(response.get(0).getSummaryId()).isEqualTo(300L);
         assertThat(response.get(0).getPaperTitle()).isEqualTo("Home Summary");
         assertThat(response.get(0).getModelName()).isEqualTo("Llama-3.1-70B-Instruct");
-        assertThat(response.get(0).getOneSentence()).isEqualTo("该方法在公开数据集上显著提升精度");
+        assertThat(response.get(0).getOneSentence()).isEqualTo("该方法在公开数据集上显著提升精度。");
     }
 
     @Test
@@ -222,7 +227,8 @@ class PaperSummaryServiceTest {
                 .status(PaperSummaryStatus.SUCCESS)
                 .provider(AiProvider.DEEPSEEK)
                 .modelName("deepseek-chat")
-                .markdownContent("该方法通过双塔结构提升召回率。后续通过重排序进一步优化结果。")
+                .markdownContent("## 摘要\n该方法通过双塔结构提升召回率。")
+                .oneSentence("该方法通过双塔结构提升召回率并改善排序质量。")
                 .generatedAt(OffsetDateTime.now())
                 .build();
         when(paperSummaryRepository.findByStatusOrderByGeneratedAtDesc(any(), any())).thenReturn(List.of(summary));
@@ -230,8 +236,8 @@ class PaperSummaryServiceTest {
         List<PaperSummaryResponse> response = paperSummaryService.listHomeSummaries(10);
 
         assertThat(response).hasSize(1);
-        assertThat(response.get(0).getModelName()).isNull();
-        assertThat(response.get(0).getOneSentence()).isEqualTo("该方法通过双塔结构提升召回率。");
+        assertThat(response.get(0).getModelName()).isEqualTo("");
+        assertThat(response.get(0).getOneSentence()).isEqualTo("该方法通过双塔结构提升召回率并改善排序质量。");
     }
 
     @Test
@@ -251,7 +257,7 @@ class PaperSummaryServiceTest {
         List<PaperSummaryResponse> response = paperSummaryService.listHomeSummaries(10);
 
         assertThat(response).hasSize(1);
-        assertThat(response.get(0).getModelName()).isNull();
-        assertThat(response.get(0).getOneSentence()).isNull();
+        assertThat(response.get(0).getModelName()).isEqualTo("");
+        assertThat(response.get(0).getOneSentence()).isEqualTo("");
     }
 }

@@ -1,11 +1,15 @@
 package com.changye.web.service;
 
 import com.changye.web.dto.response.MetadataEnrichResponse;
+import com.changye.web.dto.response.VenueRankingResponse;
+import com.changye.web.model.Paper;
 import com.changye.web.repository.PaperRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,5 +67,57 @@ class MetadataServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getSource()).isEqualTo("none");
+    }
+
+    @Test
+    void applyEnrichmentPersistsCcfAndJcrFromResponse() {
+        Paper paper = Paper.builder()
+                .id(11L)
+                .title("Before")
+                .venue("NeurIPS")
+                .build();
+        MetadataEnrichResponse response = MetadataEnrichResponse.builder()
+                .ccfRank("A")
+                .jcrQuartile("Q1")
+                .build();
+
+        when(paperRepository.findById(11L)).thenReturn(Optional.of(paper));
+        when(paperRepository.save(any(Paper.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        metadataService.applyEnrichment(11L, response);
+
+        assertThat(paper.getCcfRank()).isEqualTo("A");
+        assertThat(paper.getJcrQuartile()).isEqualTo("Q1");
+        verify(paperRepository).save(paper);
+    }
+
+    @Test
+    void applyEnrichmentFillsMissingRanksFromVenueLookup() {
+        Paper paper = Paper.builder()
+                .id(12L)
+                .title("Before")
+                .venue("ICCV")
+                .build();
+        MetadataEnrichResponse response = MetadataEnrichResponse.builder()
+                .ccfRank(null)
+                .jcrQuartile(null)
+                .build();
+        VenueRankingResponse ranking = VenueRankingResponse.builder()
+                .venue("ICCV")
+                .ccfRank("A")
+                .jcrQuartile("Q1")
+                .impactFactor(new BigDecimal("12.3"))
+                .build();
+
+        when(paperRepository.findById(12L)).thenReturn(Optional.of(paper));
+        when(venueRankingService.lookup("ICCV")).thenReturn(ranking);
+        when(paperRepository.save(any(Paper.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        metadataService.applyEnrichment(12L, response);
+
+        assertThat(paper.getCcfRank()).isEqualTo("A");
+        assertThat(paper.getJcrQuartile()).isEqualTo("Q1");
+        assertThat(paper.getImpactFactor()).isEqualByComparingTo("12.3");
+        verify(paperRepository).save(paper);
     }
 }
