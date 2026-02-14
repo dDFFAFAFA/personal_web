@@ -473,6 +473,126 @@
 
 ---
 
+## Phase 2: 元数据增强 + 导入导出
+
+### 4. 元数据增强
+
+#### `POST /api/v1/papers/enrich/doi`
+
+通过 DOI 自动填充论文元数据（预览，不保存）。
+
+**Request Body**:
+```json
+{ "doi": "10.48550/arXiv.1706.03762" }
+```
+
+**Response** `200`:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "title": "Attention Is All You Need",
+    "authors": ["Vaswani, A.", "Shazeer, N."],
+    "year": 2017,
+    "venue": "NeurIPS",
+    "doi": "10.48550/arXiv.1706.03762",
+    "abstractText": "The dominant sequence...",
+    "paperUrl": "https://arxiv.org/abs/1706.03762",
+    "citationCount": 120000,
+    "ccfRank": "A",
+    "jcrQuartile": null,
+    "source": "crossref"
+  },
+  "timestamp": "..."
+}
+```
+
+---
+
+#### `POST /api/v1/papers/enrich/title`
+
+通过标题搜索填充元数据（预览，不保存）。
+
+**Request Body**:
+```json
+{ "title": "Attention Is All You Need" }
+```
+
+**Response**: 同 DOI 接口格式
+
+---
+
+#### `POST /api/v1/papers/{id}/enrich`
+
+对已有论文触发元数据补全，自动保存到数据库。
+
+**Response** `200`: 同 `GET /api/v1/papers/{id}` 格式
+
+---
+
+#### `GET /api/v1/venues/lookup`
+
+查询期刊/会议的 CCF 等级。
+
+**Query Parameters**: `name` (string) — 期刊/会议名称
+
+**Response** `200`:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "venue": "NeurIPS",
+    "ccfRank": "A",
+    "jcrQuartile": null,
+    "impactFactor": null,
+    "category": "人工智能",
+    "type": "conference"
+  },
+  "timestamp": "..."
+}
+```
+
+---
+
+### 5. 导入导出
+
+#### `GET /api/v1/papers/export`
+
+导出论文为 BibTeX 或 RIS 格式文件。
+
+**Query Parameters**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| format | string | 是 | `bibtex` 或 `ris` |
+| ids | string | 否 | 论文 ID 列表，逗号分隔。不传则导出全部 |
+
+**Response**: 文件下载 (`Content-Disposition: attachment`)
+
+---
+
+#### `POST /api/v1/papers/import`
+
+导入 BibTeX 或 RIS 文件，批量创建论文。
+
+**Content-Type**: `multipart/form-data`
+
+**Form Fields**: `file` (File) — `.bib` 或 `.ris` 文件
+
+**Response** `200`:
+```json
+{
+  "code": 200,
+  "message": "成功导入 5 篇论文",
+  "data": [ /* PaperResponse array */ ],
+  "timestamp": "..."
+}
+```
+
+---
+
 ## 附录: 阅读状态枚举
 
 | 值 | 中文 | 说明 |
@@ -482,3 +602,4 @@
 | `HALF_READ` | 读了一半 | 读了核心部分 |
 | `FINISHED` | 精读完成 | 完整阅读 |
 | `NEED_REREAD` | 需要重读 | 需要再次精读 |
+
