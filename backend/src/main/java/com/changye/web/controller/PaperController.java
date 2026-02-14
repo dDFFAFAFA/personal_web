@@ -95,6 +95,12 @@ public class PaperController {
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
+    @GetMapping("/home/summaries")
+    public ResponseEntity<ApiResponse<List<PaperSummaryResponse>>> listHomeSummaries(
+            @RequestParam(defaultValue = "10") Integer limit) {
+        return ResponseEntity.ok(ApiResponse.success(paperSummaryService.listHomeSummaries(limit)));
+    }
+
     @PostMapping(value = "/papers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<PaperResponse>> createPaper(
             @RequestPart("file") MultipartFile file,
