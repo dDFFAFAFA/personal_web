@@ -8,4 +8,6 @@ public interface PaperCodeEntryRepository extends JpaRepository<PaperCodeEntry, 
     List<PaperCodeEntry> findAllByOrderByUpdatedAtDesc();
 
     List<PaperCodeEntry> findByPaperIdOrderByUpdatedAtDesc(Long paperId);
+
+    boolean existsByPaperIdAndRepoUrl(Long paperId, String repoUrl);
 }
