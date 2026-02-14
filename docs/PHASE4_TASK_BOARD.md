@@ -14,7 +14,7 @@
 | P4-BEB-02 | `POST /papers/{id}/repo-links/extract` | `BE-Thread-B` | TODO | P4-BEB-01 |
 | P4-BEB-03 | `GET /papers/{id}/repo-links` | `BE-Thread-B` | TODO | P4-BEB-01 |
 | P4-BEB-04 | `POST /papers/{id}/repo-links/apply` + README 联动 | `BE-Thread-B` | TODO | P4-BEB-02 |
-| P4-FE-01 | 首页概要区块（列表/状态） | `FE-Thread` | TODO | P4-BEA-03 |
+| P4-FE-01 | 首页概要区块（列表/状态） | `FE-Thread` | DONE | P4-BEA-03 |
 | P4-FE-02 | 详情页概要生成与 markdown 下载 | `FE-Thread` | TODO | P4-BEA-03 |
 | P4-FE-03 | 详情页链接提取与应用面板 | `FE-Thread` | TODO | P4-BEB-03 |
 
