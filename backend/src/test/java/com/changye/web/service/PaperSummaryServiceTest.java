@@ -188,8 +188,9 @@ class PaperSummaryServiceTest {
         assertThat(response).isEmpty();
     }
 
+
     @Test
-    void listHomeSummariesReturnsMappedResult() {
+    void listHomeSummariesReturnsMappedResultWithExtractedFields() {
         Paper paper = Paper.builder().id(5L).title("Home Summary").build();
         PaperSummary summary = PaperSummary.builder()
                 .id(300L)
@@ -197,7 +198,7 @@ class PaperSummaryServiceTest {
                 .status(PaperSummaryStatus.SUCCESS)
                 .provider(AiProvider.QWEN)
                 .modelName("qwen-plus")
-                .markdownContent("## Digest")
+                .markdownContent("模型名称：Llama-3.1-70B-Instruct\n一句话精要：该方法在公开数据集上显著提升精度。")
                 .generatedAt(OffsetDateTime.now())
                 .build();
         when(paperSummaryRepository.findByStatusOrderByGeneratedAtDesc(any(), any())).thenReturn(List.of(summary));
@@ -207,7 +208,50 @@ class PaperSummaryServiceTest {
         assertThat(response).hasSize(1);
         assertThat(response.get(0).getPaperId()).isEqualTo(5L);
         assertThat(response.get(0).getSummaryId()).isEqualTo(300L);
-        assertThat(response.get(0).getStatus()).isEqualTo(PaperSummaryStatus.SUCCESS);
-        assertThat(response.get(0).getMarkdown()).isEqualTo("## Digest");
+        assertThat(response.get(0).getPaperTitle()).isEqualTo("Home Summary");
+        assertThat(response.get(0).getModelName()).isEqualTo("Llama-3.1-70B-Instruct");
+        assertThat(response.get(0).getOneSentence()).isEqualTo("该方法在公开数据集上显著提升精度");
+    }
+
+    @Test
+    void listHomeSummariesFallsBackWhenModelNameMissing() {
+        Paper paper = Paper.builder().id(6L).title("No Model Name").build();
+        PaperSummary summary = PaperSummary.builder()
+                .id(301L)
+                .paper(paper)
+                .status(PaperSummaryStatus.SUCCESS)
+                .provider(AiProvider.DEEPSEEK)
+                .modelName("deepseek-chat")
+                .markdownContent("该方法通过双塔结构提升召回率。后续通过重排序进一步优化结果。")
+                .generatedAt(OffsetDateTime.now())
+                .build();
+        when(paperSummaryRepository.findByStatusOrderByGeneratedAtDesc(any(), any())).thenReturn(List.of(summary));
+
+        List<PaperSummaryResponse> response = paperSummaryService.listHomeSummaries(10);
+
+        assertThat(response).hasSize(1);
+        assertThat(response.get(0).getModelName()).isNull();
+        assertThat(response.get(0).getOneSentence()).isEqualTo("该方法通过双塔结构提升召回率。");
+    }
+
+    @Test
+    void listHomeSummariesHandlesEmptyMarkdown() {
+        Paper paper = Paper.builder().id(7L).title("Empty Markdown").build();
+        PaperSummary summary = PaperSummary.builder()
+                .id(302L)
+                .paper(paper)
+                .status(PaperSummaryStatus.SUCCESS)
+                .provider(AiProvider.DEEPSEEK)
+                .modelName("deepseek-chat")
+                .markdownContent("   ")
+                .generatedAt(OffsetDateTime.now())
+                .build();
+        when(paperSummaryRepository.findByStatusOrderByGeneratedAtDesc(any(), any())).thenReturn(List.of(summary));
+
+        List<PaperSummaryResponse> response = paperSummaryService.listHomeSummaries(10);
+
+        assertThat(response).hasSize(1);
+        assertThat(response.get(0).getModelName()).isNull();
+        assertThat(response.get(0).getOneSentence()).isNull();
     }
 }
