@@ -163,12 +163,27 @@
           </el-col>
 
           <!-- Right: Notes -->
-          <el-col :span="16">
+          <el-col :span="16" class="notes-theme-scope" :style="noteThemeStyle">
             <el-card class="notes-card">
               <template #header>
                 <div class="notes-header">
                   <span>阅读笔记 ({{ notes.length }})</span>
-                  <el-button type="primary" size="small" :icon="Plus" @click="createNote">新增笔记</el-button>
+                  <div class="notes-header-actions">
+                    <el-select
+                      v-model="selectedNoteTheme"
+                      size="small"
+                      class="notes-theme-select"
+                      @change="handleNoteThemeChange"
+                    >
+                      <el-option
+                        v-for="theme in noteThemeOptions"
+                        :key="theme.value"
+                        :label="theme.label"
+                        :value="theme.value"
+                      />
+                    </el-select>
+                    <el-button type="primary" size="small" :icon="Plus" @click="createNote">新增笔记</el-button>
+                  </div>
                 </div>
               </template>
 
@@ -188,9 +203,7 @@
                     <span class="note-title">{{ note.title }}</span>
                     <span class="note-time">{{ formatDate(note.updatedAt) }}</span>
                   </div>
-                  <div class="note-preview">
-                    {{ note.content.slice(0, 100) }}...
-                  </div>
+                  <div class="note-preview markdown-note-preview" v-html="renderNotePreview(note.content)" />
                 </el-card>
               </div>
             </el-card>
@@ -334,14 +347,29 @@
          <!-- Reuse notes list or just show duplicate -->
          <div class="notes-tab-content">
              <div class="notes-header" style="margin-bottom: 20px;">
-                <el-button type="primary" :icon="Plus" @click="createNote">新增笔记</el-button>
+                <div class="notes-header-actions">
+                  <el-select
+                    v-model="selectedNoteTheme"
+                    size="small"
+                    class="notes-theme-select"
+                    @change="handleNoteThemeChange"
+                  >
+                    <el-option
+                      v-for="theme in noteThemeOptions"
+                      :key="theme.value"
+                      :label="theme.label"
+                      :value="theme.value"
+                    />
+                  </el-select>
+                  <el-button type="primary" :icon="Plus" @click="createNote">新增笔记</el-button>
+                </div>
              </div>
              <el-row :gutter="20">
                 <el-col :span="8" v-for="note in notes" :key="note.id">
                    <el-card class="note-item" shadow="hover" @click="editNote(note.id)" style="margin-bottom: 20px; cursor: pointer;">
                       <h3>{{ note.title }}</h3>
                       <p class="note-time">{{ formatDate(note.updatedAt) }}</p>
-                      <p class="note-preview">{{ note.content.slice(0, 50) }}...</p>
+                      <div class="note-preview markdown-note-preview" v-html="renderNotePreview(note.content)" />
                    </el-card>
                 </el-col>
              </el-row>
@@ -362,6 +390,9 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
+import MarkdownIt from 'markdown-it'
+// @ts-ignore
+import markdownItMark from 'markdown-it-mark'
 import {
   applyPaperRepoLinks,
   getPaperDetail,
@@ -413,6 +444,53 @@ const repoLinksApplying = ref(false)
 const repoLinksError = ref('')
 const repoLinkCandidates = ref<PaperRepoLinkCandidate[]>([])
 const selectedRepoLinkIds = ref<number[]>([])
+
+const NOTE_THEME_STORAGE_KEY = "notes-highlight-theme"
+const noteThemeOptions = [
+  { value: "morandi-neutral", label: "雾灰米白" },
+  { value: "morandi-sage", label: "鼠尾草绿" },
+  { value: "morandi-blue", label: "雾霭蓝" },
+  { value: "morandi-rose", label: "陶土玫瑰" },
+  { value: "morandi-lilac", label: "灰紫暮色" }
+] as const
+
+const noteThemeTokens: Record<string, { markBg: string; markText: string }> = {
+  "morandi-neutral": { markBg: "#d8d2ca", markText: "#594f46" },
+  "morandi-sage": { markBg: "#c6d0c2", markText: "#405046" },
+  "morandi-blue": { markBg: "#c8d2d8", markText: "#3f4a55" },
+  "morandi-rose": { markBg: "#d7c6c2", markText: "#5a4545" },
+  "morandi-lilac": { markBg: "#d1cad7", markText: "#4b4458" }
+}
+
+const resolveInitialNoteTheme = () => {
+  if (typeof window === "undefined") return "morandi-neutral"
+  const stored = window.localStorage.getItem(NOTE_THEME_STORAGE_KEY)
+  if (stored && noteThemeTokens[stored]) return stored
+  return "morandi-neutral"
+}
+
+const selectedNoteTheme = ref(resolveInitialNoteTheme())
+const noteThemeStyle = computed(() => {
+  const theme = (noteThemeTokens[selectedNoteTheme.value] ?? noteThemeTokens["morandi-neutral"]) as {
+    markBg: string
+    markText: string
+  }
+  return {
+    "--note-mark-bg": theme.markBg,
+    "--note-mark-text": theme.markText
+  }
+})
+
+const handleNoteThemeChange = (value: string) => {
+  selectedNoteTheme.value = noteThemeTokens[value] ? value : "morandi-neutral"
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(NOTE_THEME_STORAGE_KEY, selectedNoteTheme.value)
+  }
+}
+
+const noteMarkdownRenderer = new MarkdownIt({ html: false, linkify: true, breaks: true })
+noteMarkdownRenderer.use(markdownItMark)
+const renderNotePreview = (content: string) => noteMarkdownRenderer.render(content || "")
 
 const pdfUrl = computed(() => `/api/v1/papers/${paperId}/file`)
 
@@ -537,12 +615,16 @@ const handleUpdateMetadata = async () => {
   try {
     const res = await enrichPaper(paperId)
     if (res.code === 200) {
-      paper.value = res.data
-      ElMessage.success('元数据已更新')
+      const paperRes = await getPaperDetail(paperId)
+      if (paperRes.code === 200) {
+        paper.value = paperRes.data
+        lastReadingStatus.value = paperRes.data.readingStatus
+      }
+      ElMessage.success("元数据已更新")
     }
   } catch (error) {
     console.error(error)
-    ElMessage.error(getErrorMessage(error, '更新元数据失败，请稍后重试'))
+    ElMessage.error(getErrorMessage(error, "更新元数据失败，请稍后重试"))
   } finally {
     enrichLoading.value = false
   }
@@ -947,6 +1029,21 @@ onMounted(() => {
   align-items: center;
 }
 
+.notes-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-theme-select {
+  width: 140px;
+}
+
+.notes-theme-scope {
+  --note-mark-bg: #d8d2ca;
+  --note-mark-text: #594f46;
+}
+
 .panel-card {
   margin-top: 16px;
 }
@@ -1079,8 +1176,37 @@ onMounted(() => {
 .note-preview {
   font-size: 13px;
   color: var(--text-secondary);
-  white-space: nowrap;
+}
+
+.markdown-note-preview {
+  max-height: 120px;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.markdown-note-preview :deep(p),
+.markdown-note-preview :deep(li),
+.markdown-note-preview :deep(blockquote) {
+  margin: 0 0 6px;
+  line-height: 1.6;
+}
+
+.markdown-note-preview :deep(mark) {
+  background-color: var(--note-mark-bg);
+  color: var(--note-mark-text);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
+
+.markdown-note-preview :deep(ul),
+.markdown-note-preview :deep(ol) {
+  padding-left: 18px;
+}
+
+.markdown-note-preview :deep(h1),
+.markdown-note-preview :deep(h2),
+.markdown-note-preview :deep(h3),
+.markdown-note-preview :deep(h4) {
+  margin: 0 0 6px;
+  font-size: 13px;
 }
 </style>
