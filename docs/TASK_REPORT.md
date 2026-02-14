@@ -122,6 +122,45 @@
 **建议**:
 - 确保后端实现 `/papers/enrich/*`, `/papers/import`, `/papers/export` 接口。
 
+### 🔧 Codex (Backend) — ✅ 已完成
+
+**完成时间**: 2026-02-14 10:50
+
+**已完成工作**:
+- [x] `MetadataService.java` — CrossRef / Semantic Scholar 外部 API 调用 + 元数据填充
+- [x] `VenueRankingService.java` — 加载 CCF 数据 (84 venues) → 精确/模糊匹配查询
+- [x] `BibTexService.java` — BibTeX/RIS 解析 (jbibtex) + 导出
+- [x] `MetadataController.java` — DOI/Title 填充 + 论文元数据更新 (4 endpoints)
+- [x] `ImportExportController.java` — BibTeX/RIS 文件导入导出 (2 endpoints)
+- [x] `PaperService.java` — 适配新字段映射 (ccfRank, jcrQuartile, impactFactor, citationCount, paperUrl)
+- [x] `VenueRankingServiceTest.java` — 精确匹配 + 模糊匹配单元测试
+- [x] `BibTexServiceTest.java` — 解析 + 导出单元测试
+
+**运行结果**:
+- `mvn compile`: 38 Java files, 0 errors
+
+**问题/偏离**:
+- 无法更新 `TASK_REPORT.md`（Antigravity 所有权），由 Antigravity 代写
+
+### 🏗️ Antigravity (架构 + 审查) — ✅ 已完成
+
+**完成时间**: 2026-02-14 11:00
+
+**已完成工作**:
+- [x] Phase 2A 架构层：Flyway V2 迁移、Paper 实体扩展 (5 新字段)、3 个新 DTO、ccf_venues.json (84 venues)
+- [x] API 合约更新：6 个新端点写入 `API_CONTRACT.md`
+- [x] 任务下发：`PHASE2_TASKS.md` 含 Codex/Gemini 完整提示词
+- [x] 审查修复：修复 Gemini 产出 15 个 TypeScript 编译错误
+- [x] 集成联调验证：Backend 38 文件编译 ✅、Frontend 0 TS 错误 ✅
+- [x] 端到端冒烟测试：Venue Lookup API (NeurIPS/CVPR/TIFS → CCF-A) ✅
+- [x] Git 管理：4 次 commit (架构层、任务提示词、API 合约、TS 修复)
+
+**验证结果**:
+- `mvn compile`: 38 files, 0 errors ✅
+- `npm run build`: 0 TS errors, production bundle OK ✅
+- Backend startup: 84 CCF venues loaded, 25 API endpoints ✅
+- Venue lookup: NeurIPS→A, CVPR→A, TIFS→A ✅
+
 ---
 
 ## 报告模板

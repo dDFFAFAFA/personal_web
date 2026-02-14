@@ -1,0 +1,338 @@
+===============================================================================
+EXTENSION NAME : linecounter
+EXTENSION VERSION : 0.2.7
+-------------------------------------------------------------------------------
+count time : 2026-02-14 10:56:24
+count workspace : /Users/changye/Desktop/2026_LLM-Agent/vibe-coding/personal_web
+total files : 306
+total code lines : 11784
+total comment lines : 520
+total blank lines : 1463
+
+    statistics
+   |      extension|     total code|  total comment|    total blank|percent|
+   -------------------------------------------------------------------------
+   |          .java|           2558|             24|            458|     22|
+   |     .MockMaker|              2|              0|              0|  0.017|
+   |            .md|           1630|            390|            537|     14|
+   |          .json|           3999|              3|            130|     34|
+   |           .yml|            130|              2|             26|    1.1|
+   |               |             94|             13|             11|   0.80|
+   |           .xml|             71|              0|              5|   0.60|
+   |           .sql|             98|             22|             18|   0.83|
+   |           .lst|            106|              0|              0|   0.90|
+   |          .html|             27|              0|              0|   0.23|
+   |            .ts|            767|             24|             70|    6.5|
+   |           .svg|              3|              0|              0|  0.025|
+   |           .css|            208|              6|             32|    1.8|
+   |           .vue|           1435|             12|            171|     12|
+   |           .log|             12|              0|              3|   0.10|
+   |            .js|            644|             24|              2|    5.5|
+   -------------------------------------------------------------------------
+.dockerignore, code is 12, comment is 1, blank is 0.
+.gitignore, code is 32, comment is 0, blank is 7.
+backend/.dockerignore, code is 7, comment is 0, blank is 0.
+backend/Dockerfile, code is 9, comment is 3, blank is 1.
+backend/pom.xml, code is 71, comment is 0, blank is 5.
+backend/README.md, code is 14, comment is 0, blank is 5.
+backend/src/main/java/com/changye/web/common/ApiResponse.java, code is 27, comment is 0, blank is 7.
+backend/src/main/java/com/changye/web/common/exception/BusinessException.java, code is 10, comment is 0, blank is 3.
+backend/src/main/java/com/changye/web/common/exception/GlobalExceptionHandler.java, code is 56, comment is 0, blank is 11.
+backend/src/main/java/com/changye/web/common/PageResponse.java, code is 13, comment is 0, blank is 3.
+backend/src/main/java/com/changye/web/config/CorsConfig.java, code is 22, comment is 0, blank is 5.
+backend/src/main/java/com/changye/web/controller/HealthController.java, code is 24, comment is 0, blank is 7.
+backend/src/main/java/com/changye/web/controller/ImportExportController.java, code is 111, comment is 0, blank is 14.
+backend/src/main/java/com/changye/web/controller/MetadataController.java, code is 60, comment is 0, blank is 12.
+backend/src/main/java/com/changye/web/controller/NoteController.java, code is 53, comment is 0, blank is 12.
+backend/src/main/java/com/changye/web/controller/PaperController.java, code is 138, comment is 0, blank is 18.
+backend/src/main/java/com/changye/web/controller/TagController.java, code is 51, comment is 0, blank is 12.
+backend/src/main/java/com/changye/web/dto/request/DoiImportRequest.java, code is 8, comment is 0, blank is 3.
+backend/src/main/java/com/changye/web/dto/request/NoteCreateRequest.java, code is 11, comment is 0, blank is 4.
+backend/src/main/java/com/changye/web/dto/request/NoteUpdateRequest.java, code is 10, comment is 0, blank is 5.
+backend/src/main/java/com/changye/web/dto/request/PaperCreateRequest.java, code is 20, comment is 0, blank is 10.
+backend/src/main/java/com/changye/web/dto/request/PaperUpdateRequest.java, code is 20, comment is 0, blank is 10.
+backend/src/main/java/com/changye/web/dto/request/StarUpdateRequest.java, code is 8, comment is 0, blank is 3.
+backend/src/main/java/com/changye/web/dto/request/StatusUpdateRequest.java, code is 9, comment is 0, blank is 3.
+backend/src/main/java/com/changye/web/dto/request/TagCreateRequest.java, code is 12, comment is 0, blank is 4.
+backend/src/main/java/com/changye/web/dto/response/MetadataEnrichResponse.java, code is 19, comment is 7, blank is 6.
+backend/src/main/java/com/changye/web/dto/response/NoteResponse.java, code is 15, comment is 0, blank is 4.
+backend/src/main/java/com/changye/web/dto/response/PaperResponse.java, code is 42, comment is 6, blank is 8.
+backend/src/main/java/com/changye/web/dto/response/TagResponse.java, code is 13, comment is 0, blank is 4.
+backend/src/main/java/com/changye/web/dto/response/VenueRankingResponse.java, code is 14, comment is 6, blank is 4.
+backend/src/main/java/com/changye/web/model/enums/ReadingStatus.java, code is 15, comment is 0, blank is 4.
+backend/src/main/java/com/changye/web/model/Note.java, code is 34, comment is 0, blank is 10.
+backend/src/main/java/com/changye/web/model/Paper.java, code is 68, comment is 5, blank is 25.
+backend/src/main/java/com/changye/web/model/Tag.java, code is 24, comment is 0, blank is 7.
+backend/src/main/java/com/changye/web/repository/NoteRepository.java, code is 8, comment is 0, blank is 6.
+backend/src/main/java/com/changye/web/repository/PaperRepository.java, code is 20, comment is 0, blank is 8.
+backend/src/main/java/com/changye/web/repository/TagRepository.java, code is 7, comment is 0, blank is 5.
+backend/src/main/java/com/changye/web/service/BibTexService.java, code is 228, comment is 0, blank is 23.
+backend/src/main/java/com/changye/web/service/MetadataService.java, code is 369, comment is 0, blank is 30.
+backend/src/main/java/com/changye/web/service/NoteService.java, code is 79, comment is 0, blank is 14.
+backend/src/main/java/com/changye/web/service/PaperService.java, code is 353, comment is 0, blank is 39.
+backend/src/main/java/com/changye/web/service/TagService.java, code is 81, comment is 0, blank is 14.
+backend/src/main/java/com/changye/web/service/VenueRankingService.java, code is 135, comment is 0, blank is 19.
+backend/src/main/java/com/changye/web/WebApplication.java, code is 9, comment is 0, blank is 3.
+backend/src/main/resources/application-dev.yml, code is 20, comment is 0, blank is 4.
+backend/src/main/resources/application-prod.yml, code is 19, comment is 1, blank is 3.
+backend/src/main/resources/application.yml, code is 26, comment is 0, blank is 6.
+backend/src/main/resources/data/ccf_venues.json, code is 96, comment is 0, blank is 0.
+backend/src/main/resources/db/migration/V1__create_paper_management_tables.sql, code is 41, comment is 7, blank is 7.
+backend/src/main/resources/db/migration/V2__add_metadata_enrichment.sql, code is 7, comment is 3, blank is 2.
+backend/src/main/resources/db/migration/V2__rename_paper_year_column.sql, code is 1, comment is 1, blank is 0.
+backend/src/test/java/com/changye/web/controller/HealthControllerTest.java, code is 24, comment is 0, blank is 5.
+backend/src/test/java/com/changye/web/controller/PaperControllerTest.java, code is 93, comment is 0, blank is 15.
+backend/src/test/java/com/changye/web/service/BibTexServiceTest.java, code is 87, comment is 0, blank is 18.
+backend/src/test/java/com/changye/web/service/PaperServiceTest.java, code is 93, comment is 0, blank is 21.
+backend/src/test/java/com/changye/web/service/TagServiceTest.java, code is 37, comment is 0, blank is 12.
+backend/src/test/java/com/changye/web/service/VenueRankingServiceTest.java, code is 28, comment is 0, blank is 8.
+backend/src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker, code is 1, comment is 0, blank is 0.
+backend/target/classes/application-dev.yml, code is 20, comment is 0, blank is 4.
+backend/target/classes/application-prod.yml, code is 19, comment is 1, blank is 3.
+backend/target/classes/application.yml, code is 26, comment is 0, blank is 6.
+backend/target/classes/com/changye/web/common/ApiResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/common/exception/BusinessException.class, it is a binary file.
+backend/target/classes/com/changye/web/common/exception/GlobalExceptionHandler.class, it is a binary file.
+backend/target/classes/com/changye/web/common/PageResponse$PageResponseBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/common/PageResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/config/CorsConfig.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/HealthController$HealthStatus.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/HealthController.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/ImportExportController.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/MetadataController$TitleRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/MetadataController.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/NoteController.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/PaperController$1.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/PaperController$2.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/PaperController.class, it is a binary file.
+backend/target/classes/com/changye/web/controller/TagController.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/DoiImportRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/NoteCreateRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/NoteUpdateRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/PaperCreateRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/PaperUpdateRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/StarUpdateRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/StatusUpdateRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/request/TagCreateRequest.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/MetadataEnrichResponse$MetadataEnrichResponseBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/MetadataEnrichResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/NoteResponse$NoteResponseBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/NoteResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/PaperResponse$NoteSummaryResponse$NoteSummaryResponseBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/PaperResponse$NoteSummaryResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/PaperResponse$PaperResponseBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/PaperResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/TagResponse$TagResponseBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/TagResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/VenueRankingResponse$VenueRankingResponseBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/dto/response/VenueRankingResponse.class, it is a binary file.
+backend/target/classes/com/changye/web/model/enums/ReadingStatus.class, it is a binary file.
+backend/target/classes/com/changye/web/model/Note$NoteBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/model/Note.class, it is a binary file.
+backend/target/classes/com/changye/web/model/Paper$PaperBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/model/Paper.class, it is a binary file.
+backend/target/classes/com/changye/web/model/Tag$TagBuilder.class, it is a binary file.
+backend/target/classes/com/changye/web/model/Tag.class, it is a binary file.
+backend/target/classes/com/changye/web/repository/NoteRepository.class, it is a binary file.
+backend/target/classes/com/changye/web/repository/PaperRepository.class, it is a binary file.
+backend/target/classes/com/changye/web/repository/TagRepository.class, it is a binary file.
+backend/target/classes/com/changye/web/service/BibTexService$1.class, it is a binary file.
+backend/target/classes/com/changye/web/service/BibTexService.class, it is a binary file.
+backend/target/classes/com/changye/web/service/MetadataService.class, it is a binary file.
+backend/target/classes/com/changye/web/service/NoteService.class, it is a binary file.
+backend/target/classes/com/changye/web/service/PaperService$1.class, it is a binary file.
+backend/target/classes/com/changye/web/service/PaperService.class, it is a binary file.
+backend/target/classes/com/changye/web/service/TagService.class, it is a binary file.
+backend/target/classes/com/changye/web/service/VenueRankingService$VenueEntry.class, it is a binary file.
+backend/target/classes/com/changye/web/service/VenueRankingService.class, it is a binary file.
+backend/target/classes/com/changye/web/WebApplication.class, it is a binary file.
+backend/target/classes/data/ccf_venues.json, code is 96, comment is 0, blank is 0.
+backend/target/classes/db/migration/V1__create_paper_management_tables.sql, code is 41, comment is 7, blank is 7.
+backend/target/classes/db/migration/V2__add_metadata_enrichment.sql, code is 7, comment is 3, blank is 2.
+backend/target/classes/db/migration/V2__rename_paper_year_column.sql, code is 1, comment is 1, blank is 0.
+backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst, code is 56, comment is 0, blank is 0.
+backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst, code is 38, comment is 0, blank is 0.
+backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst, code is 6, comment is 0, blank is 0.
+backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst, code is 6, comment is 0, blank is 0.
+backend/target/test-classes/com/changye/web/controller/HealthControllerTest.class, it is a binary file.
+backend/target/test-classes/com/changye/web/controller/PaperControllerTest.class, it is a binary file.
+backend/target/test-classes/com/changye/web/service/BibTexServiceTest.class, it is a binary file.
+backend/target/test-classes/com/changye/web/service/PaperServiceTest.class, it is a binary file.
+backend/target/test-classes/com/changye/web/service/TagServiceTest.class, it is a binary file.
+backend/target/test-classes/com/changye/web/service/VenueRankingServiceTest.class, it is a binary file.
+backend/target/test-classes/mockito-extensions/org.mockito.plugins.MockMaker, code is 1, comment is 0, blank is 0.
+backend/uploads/papers/1_The Sweet Danger of Sugar_Debunking Representation Learning for Encrypted Traffic Classification.pdf, it is a binary file.
+CONTRACT.md, code is 113, comment is 284, blank is 43.
+DESIGN.md, code is 16, comment is 0, blank is 7.
+docs/API_CONTRACT.md, code is 468, comment is 0, blank is 137.
+docs/API_OVERVIEW.md, code is 208, comment is 3, blank is 92.
+docs/PHASE0_TASKS.md, code is 151, comment is 1, blank is 40.
+docs/PHASE1_TASKS.md, code is 236, comment is 1, blank is 68.
+docs/PHASE2_TASKS.md, code is 296, comment is 10, blank is 98.
+docs/TASK_REPORT.md, code is 87, comment is 26, blank is 36.
+frontend/.dockerignore, code is 8, comment is 0, blank is 0.
+frontend/.gitignore, code is 14, comment is 9, blank is 2.
+frontend/auto-imports.d.ts, code is 3, comment is 6, blank is 1.
+frontend/components.d.ts, code is 45, comment is 8, blank is 2.
+frontend/dist/assets/apl-B4CMkyY2.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/asciiarmor-Df11BRmG.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/asn1-EdZsLKOL.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/asterisk-B-8jnY81.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/brainfuck-C4LP7Hcl.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/clike-B9uivgTg.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/clojure-BMjYHr_A.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/cmake-BQqOBYOt.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/cobol-CWcv1MsR.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/coffeescript-S37ZYGWr.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/commonlisp-DBKNyK5s.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/crystal-SjHAIU92.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/css-BnMrqG3P.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/cypher-C_CwsFkJ.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/d-pRatUO7H.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/diff-DbItnlRl.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/dockerfile-BKs6k2Af.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/dtd-DF_7sFjM.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/dylan-DwRh75JA.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/ebnf-CDyGwa7X.js, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/ecl-Cabwm37j.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/eiffel-CnydiIhH.js, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/elm-vLlmbW-K.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/erlang-BNw1qcRV.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/factor-kuTfRLto.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/fcl-Kvtd6kyn.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/forth-Ffai-XNe.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/fortran-DYz_wnZ1.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/gas-Bneqetm1.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/gherkin-heZmZLOM.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/groovy-D9Dt4D0W.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/haskell-Cw1EW3IL.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/haxe-H-WmDvRZ.js, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/http-DBlCnlav.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/idl-BEugSyMb.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-26KRTTEd.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-BkVZddGW.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-BKyF1Uls.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-BsJpmdKF.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-C3ptSFkK.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-C7SOz4Br.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-Ck5MY7eq.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-Cnelh3AL.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-CnRZUUBV.css, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/index-CPyD4uTI.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-CwV1f2Yu.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-DbpG-N56.js, code is 524, comment is 17, blank is 1.
+frontend/dist/assets/index-DlcbKRZT.js, code is 2, comment is 0, blank is 0.
+frontend/dist/assets/index-DTqSILXL.js, code is 2, comment is 0, blank is 1.
+frontend/dist/assets/index-DVUVFOMZ.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-DWPWuUC-.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-gBAzpXlW.js, code is 7, comment is 0, blank is 0.
+frontend/dist/assets/index-Rn4IVqJX.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/index-WLEH7mgv.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/javascript-iXu5QeM3.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/julia-DuME0IfC.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/livescript-BwQOo05w.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/logo-w2J9gtWh.jpg, it is a binary file.
+frontend/dist/assets/lua-BgMRiT3U.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/mathematica-DTrFuWx2.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/mbox-CNhZ1qSd.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/mirc-CjQqDB4T.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/mllike-CXdrOF99.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/modelica-Dc1JOy9r.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/mscgen-BA5vi2Kp.js, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/mumps-BT43cFF4.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/nginx-DdIZxoE0.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/nsis-LdVXkNf5.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/ntriples-BfvgReVJ.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/octave-Ck1zUtKM.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/oz-BzwKVEFT.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/pascal--L3eBynH.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/perl-CdXCOZ3F.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/pig-CevX1Tat.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/powershell-CFHJl5sT.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/properties-C78fOPTZ.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/protobuf-ChK-085T.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/pug-DeIclll2.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/puppet-DMA9R1ak.js, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/python-BuPzkPfP.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/q-pXgVlZs6.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/r-B6wPVr8A.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/rpm-CTu-6PCP.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/ruby-B2Rjki9n.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/sas-B4kiWyti.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/scheme-C41bIUwD.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/shell-CjFT_Tl9.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/sieve-C3Gn_uJK.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/simple-mode-GW_nhZxv.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/smalltalk-CnHTOXQT.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/solr-DehyRSwq.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/sparql-DkYu6x3z.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/spreadsheet-BCZA_wO0.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/sql-D0XecflT.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/stex-C3f8Ysf7.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/stylus-B533Al4x.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/swift-BzpIVaGY.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/tcl-DVfN8rqt.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/textile-CnDTJFAw.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/tiddlywiki-DO-Gjzrf.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/tiki-DGYXhP31.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/toml-Bm5Em-hy.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/troff-wAsdV37c.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/ttcn-cfg-B9xdYoR4.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/ttcn-CfJYG6tj.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/turtle-B1tBg_DP.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/vb-CmGdzxic.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/vbscript-BuJXcnF6.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/velocity-D8B20fx6.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/verilog-C6RDOZhf.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/vhdl-lSbBsy5d.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/webidl-ZXfAyPTL.js, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/xquery-DzFWVndE.js, code is 1, comment is 0, blank is 0.
+frontend/dist/assets/yacas-BJ4BC0dw.js, code is 1, comment is 1, blank is 0.
+frontend/dist/assets/z80-Hz9HOZM7.js, code is 1, comment is 0, blank is 0.
+frontend/dist/index.html, code is 14, comment is 0, blank is 0.
+frontend/dist/logo.jpg, it is a binary file.
+frontend/dist/vite.svg, code is 1, comment is 0, blank is 0.
+frontend/Dockerfile, code is 12, comment is 0, blank is 1.
+frontend/index.html, code is 13, comment is 0, blank is 0.
+frontend/package-lock.json, code is 3732, comment is 0, blank is 127.
+frontend/package.json, code is 32, comment is 0, blank is 0.
+frontend/public/logo.jpg, it is a binary file.
+frontend/public/vite.svg, code is 1, comment is 0, blank is 0.
+frontend/README.md, code is 11, comment is 1, blank is 6.
+frontend/src/api/health.ts, code is 10, comment is 0, blank is 2.
+frontend/src/api/importExport.ts, code is 19, comment is 0, blank is 2.
+frontend/src/api/metadata.ts, code is 11, comment is 0, blank is 4.
+frontend/src/api/note.ts, code is 88, comment is 0, blank is 6.
+frontend/src/api/paper.ts, code is 168, comment is 4, blank is 10.
+frontend/src/api/request.ts, code is 29, comment is 3, blank is 3.
+frontend/src/api/tag.ts, code is 69, comment is 0, blank is 6.
+frontend/src/App.vue, code is 14, comment is 0, blank is 2.
+frontend/src/assets/logo.jpg, it is a binary file.
+frontend/src/assets/vue.svg, code is 1, comment is 0, blank is 0.
+frontend/src/components/HelloWorld.vue, code is 35, comment is 0, blank is 6.
+frontend/src/composables/useTheme.ts, code is 26, comment is 1, blank is 6.
+frontend/src/layouts/DefaultLayout.vue, code is 81, comment is 0, blank is 5.
+frontend/src/main.ts, code is 17, comment is 1, blank is 4.
+frontend/src/pages/home/index.vue, code is 52, comment is 0, blank is 5.
+frontend/src/pages/papers/components/PaperUploadDialog.vue, code is 211, comment is 3, blank is 24.
+frontend/src/pages/papers/components/PdfViewer.vue, code is 118, comment is 1, blank is 22.
+frontend/src/pages/papers/detail.vue, code is 362, comment is 1, blank is 47.
+frontend/src/pages/papers/index.vue, code is 332, comment is 5, blank is 32.
+frontend/src/pages/papers/note-edit.vue, code is 128, comment is 2, blank is 17.
+frontend/src/pages/tags/index.vue, code is 102, comment is 0, blank is 11.
+frontend/src/router/index.ts, code is 45, comment is 0, blank is 3.
+frontend/src/stores/paperStore.ts, code is 49, comment is 0, blank is 5.
+frontend/src/stores/tagStore.ts, code is 64, comment is 0, blank is 6.
+frontend/src/style.css, code is 70, comment is 0, blank is 9.
+frontend/src/styles/index.css, code is 137, comment is 5, blank is 23.
+frontend/src/types/api.ts, code is 13, comment is 0, blank is 1.
+frontend/src/types/enums.ts, code is 15, comment is 0, blank is 2.
+frontend/src/types/paper.ts, code is 72, comment is 0, blank is 6.
+frontend/tsconfig.app.json, code is 14, comment is 1, blank is 1.
+frontend/tsconfig.json, code is 7, comment is 0, blank is 0.
+frontend/tsconfig.node.json, code is 22, comment is 2, blank is 2.
+frontend/vite.config.ts, code is 24, comment is 1, blank is 1.
+logs/backend.log, code is 4, comment is 0, blank is 1.
+logs/frontend.log, code is 8, comment is 0, blank is 2.
+OWNERSHIP.md, code is 30, comment is 64, blank is 5.
+===============================================================================

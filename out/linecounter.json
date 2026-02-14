@@ -1,0 +1,2002 @@
+{
+    "extension": "linecounter",
+    "version": "0.2.7",
+    "workspace": "/Users/changye/Desktop/2026_LLM-Agent/vibe-coding/personal_web",
+    "linecount": [
+        {
+            "version": "0.2.7",
+            "counttime": "2026-02-14 10:56:24",
+            "filesum": 306,
+            "codesum": 11784,
+            "commentsum": 520,
+            "blanksum": 1463,
+            "statistics": {
+                ".java": {
+                    "code": 2558,
+                    "comment": 24,
+                    "blank": 458
+                },
+                ".MockMaker": {
+                    "code": 2,
+                    "comment": 0,
+                    "blank": 0
+                },
+                ".md": {
+                    "code": 1630,
+                    "comment": 390,
+                    "blank": 537
+                },
+                ".json": {
+                    "code": 3999,
+                    "comment": 3,
+                    "blank": 130
+                },
+                ".yml": {
+                    "code": 130,
+                    "comment": 2,
+                    "blank": 26
+                },
+                "": {
+                    "code": 94,
+                    "comment": 13,
+                    "blank": 11
+                },
+                ".xml": {
+                    "code": 71,
+                    "comment": 0,
+                    "blank": 5
+                },
+                ".sql": {
+                    "code": 98,
+                    "comment": 22,
+                    "blank": 18
+                },
+                ".lst": {
+                    "code": 106,
+                    "comment": 0,
+                    "blank": 0
+                },
+                ".html": {
+                    "code": 27,
+                    "comment": 0,
+                    "blank": 0
+                },
+                ".ts": {
+                    "code": 767,
+                    "comment": 24,
+                    "blank": 70
+                },
+                ".svg": {
+                    "code": 3,
+                    "comment": 0,
+                    "blank": 0
+                },
+                ".css": {
+                    "code": 208,
+                    "comment": 6,
+                    "blank": 32
+                },
+                ".vue": {
+                    "code": 1435,
+                    "comment": 12,
+                    "blank": 171
+                },
+                ".log": {
+                    "code": 12,
+                    "comment": 0,
+                    "blank": 3
+                },
+                ".js": {
+                    "code": 644,
+                    "comment": 24,
+                    "blank": 2
+                }
+            },
+            "filelist": [
+                {
+                    "blank": 0,
+                    "code": 12,
+                    "comment": 1,
+                    "filename": ".dockerignore"
+                },
+                {
+                    "blank": 7,
+                    "code": 32,
+                    "comment": 0,
+                    "filename": ".gitignore"
+                },
+                {
+                    "blank": 0,
+                    "code": 7,
+                    "comment": 0,
+                    "filename": "backend/.dockerignore"
+                },
+                {
+                    "blank": 1,
+                    "code": 9,
+                    "comment": 3,
+                    "filename": "backend/Dockerfile"
+                },
+                {
+                    "blank": 5,
+                    "code": 71,
+                    "comment": 0,
+                    "filename": "backend/pom.xml"
+                },
+                {
+                    "blank": 5,
+                    "code": 14,
+                    "comment": 0,
+                    "filename": "backend/README.md"
+                },
+                {
+                    "blank": 7,
+                    "code": 27,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/common/ApiResponse.java"
+                },
+                {
+                    "blank": 3,
+                    "code": 10,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/common/exception/BusinessException.java"
+                },
+                {
+                    "blank": 11,
+                    "code": 56,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/common/exception/GlobalExceptionHandler.java"
+                },
+                {
+                    "blank": 3,
+                    "code": 13,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/common/PageResponse.java"
+                },
+                {
+                    "blank": 5,
+                    "code": 22,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/config/CorsConfig.java"
+                },
+                {
+                    "blank": 7,
+                    "code": 24,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/controller/HealthController.java"
+                },
+                {
+                    "blank": 14,
+                    "code": 111,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/controller/ImportExportController.java"
+                },
+                {
+                    "blank": 12,
+                    "code": 60,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/controller/MetadataController.java"
+                },
+                {
+                    "blank": 12,
+                    "code": 53,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/controller/NoteController.java"
+                },
+                {
+                    "blank": 18,
+                    "code": 138,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/controller/PaperController.java"
+                },
+                {
+                    "blank": 12,
+                    "code": 51,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/controller/TagController.java"
+                },
+                {
+                    "blank": 3,
+                    "code": 8,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/DoiImportRequest.java"
+                },
+                {
+                    "blank": 4,
+                    "code": 11,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/NoteCreateRequest.java"
+                },
+                {
+                    "blank": 5,
+                    "code": 10,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/NoteUpdateRequest.java"
+                },
+                {
+                    "blank": 10,
+                    "code": 20,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/PaperCreateRequest.java"
+                },
+                {
+                    "blank": 10,
+                    "code": 20,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/PaperUpdateRequest.java"
+                },
+                {
+                    "blank": 3,
+                    "code": 8,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/StarUpdateRequest.java"
+                },
+                {
+                    "blank": 3,
+                    "code": 9,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/StatusUpdateRequest.java"
+                },
+                {
+                    "blank": 4,
+                    "code": 12,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/request/TagCreateRequest.java"
+                },
+                {
+                    "blank": 6,
+                    "code": 19,
+                    "comment": 7,
+                    "filename": "backend/src/main/java/com/changye/web/dto/response/MetadataEnrichResponse.java"
+                },
+                {
+                    "blank": 4,
+                    "code": 15,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/response/NoteResponse.java"
+                },
+                {
+                    "blank": 8,
+                    "code": 42,
+                    "comment": 6,
+                    "filename": "backend/src/main/java/com/changye/web/dto/response/PaperResponse.java"
+                },
+                {
+                    "blank": 4,
+                    "code": 13,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/dto/response/TagResponse.java"
+                },
+                {
+                    "blank": 4,
+                    "code": 14,
+                    "comment": 6,
+                    "filename": "backend/src/main/java/com/changye/web/dto/response/VenueRankingResponse.java"
+                },
+                {
+                    "blank": 4,
+                    "code": 15,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/model/enums/ReadingStatus.java"
+                },
+                {
+                    "blank": 10,
+                    "code": 34,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/model/Note.java"
+                },
+                {
+                    "blank": 25,
+                    "code": 68,
+                    "comment": 5,
+                    "filename": "backend/src/main/java/com/changye/web/model/Paper.java"
+                },
+                {
+                    "blank": 7,
+                    "code": 24,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/model/Tag.java"
+                },
+                {
+                    "blank": 6,
+                    "code": 8,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/repository/NoteRepository.java"
+                },
+                {
+                    "blank": 8,
+                    "code": 20,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/repository/PaperRepository.java"
+                },
+                {
+                    "blank": 5,
+                    "code": 7,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/repository/TagRepository.java"
+                },
+                {
+                    "blank": 23,
+                    "code": 228,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/service/BibTexService.java"
+                },
+                {
+                    "blank": 30,
+                    "code": 369,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/service/MetadataService.java"
+                },
+                {
+                    "blank": 14,
+                    "code": 79,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/service/NoteService.java"
+                },
+                {
+                    "blank": 39,
+                    "code": 353,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/service/PaperService.java"
+                },
+                {
+                    "blank": 14,
+                    "code": 81,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/service/TagService.java"
+                },
+                {
+                    "blank": 19,
+                    "code": 135,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/service/VenueRankingService.java"
+                },
+                {
+                    "blank": 3,
+                    "code": 9,
+                    "comment": 0,
+                    "filename": "backend/src/main/java/com/changye/web/WebApplication.java"
+                },
+                {
+                    "blank": 4,
+                    "code": 20,
+                    "comment": 0,
+                    "filename": "backend/src/main/resources/application-dev.yml"
+                },
+                {
+                    "blank": 3,
+                    "code": 19,
+                    "comment": 1,
+                    "filename": "backend/src/main/resources/application-prod.yml"
+                },
+                {
+                    "blank": 6,
+                    "code": 26,
+                    "comment": 0,
+                    "filename": "backend/src/main/resources/application.yml"
+                },
+                {
+                    "blank": 0,
+                    "code": 96,
+                    "comment": 0,
+                    "filename": "backend/src/main/resources/data/ccf_venues.json"
+                },
+                {
+                    "blank": 7,
+                    "code": 41,
+                    "comment": 7,
+                    "filename": "backend/src/main/resources/db/migration/V1__create_paper_management_tables.sql"
+                },
+                {
+                    "blank": 2,
+                    "code": 7,
+                    "comment": 3,
+                    "filename": "backend/src/main/resources/db/migration/V2__add_metadata_enrichment.sql"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "backend/src/main/resources/db/migration/V2__rename_paper_year_column.sql"
+                },
+                {
+                    "blank": 5,
+                    "code": 24,
+                    "comment": 0,
+                    "filename": "backend/src/test/java/com/changye/web/controller/HealthControllerTest.java"
+                },
+                {
+                    "blank": 15,
+                    "code": 93,
+                    "comment": 0,
+                    "filename": "backend/src/test/java/com/changye/web/controller/PaperControllerTest.java"
+                },
+                {
+                    "blank": 18,
+                    "code": 87,
+                    "comment": 0,
+                    "filename": "backend/src/test/java/com/changye/web/service/BibTexServiceTest.java"
+                },
+                {
+                    "blank": 21,
+                    "code": 93,
+                    "comment": 0,
+                    "filename": "backend/src/test/java/com/changye/web/service/PaperServiceTest.java"
+                },
+                {
+                    "blank": 12,
+                    "code": 37,
+                    "comment": 0,
+                    "filename": "backend/src/test/java/com/changye/web/service/TagServiceTest.java"
+                },
+                {
+                    "blank": 8,
+                    "code": 28,
+                    "comment": 0,
+                    "filename": "backend/src/test/java/com/changye/web/service/VenueRankingServiceTest.java"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "backend/src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker"
+                },
+                {
+                    "blank": 4,
+                    "code": 20,
+                    "comment": 0,
+                    "filename": "backend/target/classes/application-dev.yml"
+                },
+                {
+                    "blank": 3,
+                    "code": 19,
+                    "comment": 1,
+                    "filename": "backend/target/classes/application-prod.yml"
+                },
+                {
+                    "blank": 6,
+                    "code": 26,
+                    "comment": 0,
+                    "filename": "backend/target/classes/application.yml"
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/common/ApiResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/common/exception/BusinessException.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/common/exception/GlobalExceptionHandler.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/common/PageResponse$PageResponseBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/common/PageResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/config/CorsConfig.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/HealthController$HealthStatus.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/HealthController.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/ImportExportController.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/MetadataController$TitleRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/MetadataController.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/NoteController.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/PaperController$1.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/PaperController$2.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/PaperController.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/controller/TagController.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/DoiImportRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/NoteCreateRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/NoteUpdateRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/PaperCreateRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/PaperUpdateRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/StarUpdateRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/StatusUpdateRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/request/TagCreateRequest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/MetadataEnrichResponse$MetadataEnrichResponseBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/MetadataEnrichResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/NoteResponse$NoteResponseBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/NoteResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/PaperResponse$NoteSummaryResponse$NoteSummaryResponseBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/PaperResponse$NoteSummaryResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/PaperResponse$PaperResponseBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/PaperResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/TagResponse$TagResponseBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/TagResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/VenueRankingResponse$VenueRankingResponseBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/dto/response/VenueRankingResponse.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/model/enums/ReadingStatus.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/model/Note$NoteBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/model/Note.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/model/Paper$PaperBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/model/Paper.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/model/Tag$TagBuilder.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/model/Tag.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/repository/NoteRepository.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/repository/PaperRepository.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/repository/TagRepository.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/BibTexService$1.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/BibTexService.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/MetadataService.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/NoteService.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/PaperService$1.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/PaperService.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/TagService.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/VenueRankingService$VenueEntry.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/service/VenueRankingService.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/classes/com/changye/web/WebApplication.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 0,
+                    "code": 96,
+                    "comment": 0,
+                    "filename": "backend/target/classes/data/ccf_venues.json"
+                },
+                {
+                    "blank": 7,
+                    "code": 41,
+                    "comment": 7,
+                    "filename": "backend/target/classes/db/migration/V1__create_paper_management_tables.sql"
+                },
+                {
+                    "blank": 2,
+                    "code": 7,
+                    "comment": 3,
+                    "filename": "backend/target/classes/db/migration/V2__add_metadata_enrichment.sql"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "backend/target/classes/db/migration/V2__rename_paper_year_column.sql"
+                },
+                {
+                    "blank": 0,
+                    "code": 56,
+                    "comment": 0,
+                    "filename": "backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst"
+                },
+                {
+                    "blank": 0,
+                    "code": 38,
+                    "comment": 0,
+                    "filename": "backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst"
+                },
+                {
+                    "blank": 0,
+                    "code": 6,
+                    "comment": 0,
+                    "filename": "backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst"
+                },
+                {
+                    "blank": 0,
+                    "code": 6,
+                    "comment": 0,
+                    "filename": "backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst"
+                },
+                {
+                    "filename": "backend/target/test-classes/com/changye/web/controller/HealthControllerTest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/test-classes/com/changye/web/controller/PaperControllerTest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/test-classes/com/changye/web/service/BibTexServiceTest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/test-classes/com/changye/web/service/PaperServiceTest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/test-classes/com/changye/web/service/TagServiceTest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "backend/target/test-classes/com/changye/web/service/VenueRankingServiceTest.class",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "backend/target/test-classes/mockito-extensions/org.mockito.plugins.MockMaker"
+                },
+                {
+                    "filename": "backend/uploads/papers/1_The Sweet Danger of Sugar_Debunking Representation Learning for Encrypted Traffic Classification.pdf",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 43,
+                    "code": 113,
+                    "comment": 284,
+                    "filename": "CONTRACT.md"
+                },
+                {
+                    "blank": 7,
+                    "code": 16,
+                    "comment": 0,
+                    "filename": "DESIGN.md"
+                },
+                {
+                    "blank": 137,
+                    "code": 468,
+                    "comment": 0,
+                    "filename": "docs/API_CONTRACT.md"
+                },
+                {
+                    "blank": 92,
+                    "code": 208,
+                    "comment": 3,
+                    "filename": "docs/API_OVERVIEW.md"
+                },
+                {
+                    "blank": 40,
+                    "code": 151,
+                    "comment": 1,
+                    "filename": "docs/PHASE0_TASKS.md"
+                },
+                {
+                    "blank": 68,
+                    "code": 236,
+                    "comment": 1,
+                    "filename": "docs/PHASE1_TASKS.md"
+                },
+                {
+                    "blank": 98,
+                    "code": 296,
+                    "comment": 10,
+                    "filename": "docs/PHASE2_TASKS.md"
+                },
+                {
+                    "blank": 36,
+                    "code": 87,
+                    "comment": 26,
+                    "filename": "docs/TASK_REPORT.md"
+                },
+                {
+                    "blank": 0,
+                    "code": 8,
+                    "comment": 0,
+                    "filename": "frontend/.dockerignore"
+                },
+                {
+                    "blank": 2,
+                    "code": 14,
+                    "comment": 9,
+                    "filename": "frontend/.gitignore"
+                },
+                {
+                    "blank": 1,
+                    "code": 3,
+                    "comment": 6,
+                    "filename": "frontend/auto-imports.d.ts"
+                },
+                {
+                    "blank": 2,
+                    "code": 45,
+                    "comment": 8,
+                    "filename": "frontend/components.d.ts"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/apl-B4CMkyY2.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/asciiarmor-Df11BRmG.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/asn1-EdZsLKOL.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/asterisk-B-8jnY81.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/brainfuck-C4LP7Hcl.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/clike-B9uivgTg.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/clojure-BMjYHr_A.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/cmake-BQqOBYOt.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/cobol-CWcv1MsR.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/coffeescript-S37ZYGWr.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/commonlisp-DBKNyK5s.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/crystal-SjHAIU92.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/css-BnMrqG3P.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/cypher-C_CwsFkJ.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/d-pRatUO7H.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/diff-DbItnlRl.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/dockerfile-BKs6k2Af.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/dtd-DF_7sFjM.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/dylan-DwRh75JA.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/ebnf-CDyGwa7X.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/ecl-Cabwm37j.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/eiffel-CnydiIhH.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/elm-vLlmbW-K.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/erlang-BNw1qcRV.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/factor-kuTfRLto.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/fcl-Kvtd6kyn.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/forth-Ffai-XNe.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/fortran-DYz_wnZ1.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/gas-Bneqetm1.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/gherkin-heZmZLOM.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/groovy-D9Dt4D0W.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/haskell-Cw1EW3IL.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/haxe-H-WmDvRZ.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/http-DBlCnlav.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/idl-BEugSyMb.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-26KRTTEd.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-BkVZddGW.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-BKyF1Uls.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-BsJpmdKF.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-C3ptSFkK.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-C7SOz4Br.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-Ck5MY7eq.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-Cnelh3AL.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/index-CnRZUUBV.css"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-CPyD4uTI.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-CwV1f2Yu.js"
+                },
+                {
+                    "blank": 1,
+                    "code": 524,
+                    "comment": 17,
+                    "filename": "frontend/dist/assets/index-DbpG-N56.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 2,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-DlcbKRZT.js"
+                },
+                {
+                    "blank": 1,
+                    "code": 2,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-DTqSILXL.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-DVUVFOMZ.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-DWPWuUC-.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 7,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-gBAzpXlW.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-Rn4IVqJX.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/index-WLEH7mgv.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/javascript-iXu5QeM3.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/julia-DuME0IfC.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/livescript-BwQOo05w.js"
+                },
+                {
+                    "filename": "frontend/dist/assets/logo-w2J9gtWh.jpg",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/lua-BgMRiT3U.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/mathematica-DTrFuWx2.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/mbox-CNhZ1qSd.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/mirc-CjQqDB4T.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/mllike-CXdrOF99.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/modelica-Dc1JOy9r.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/mscgen-BA5vi2Kp.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/mumps-BT43cFF4.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/nginx-DdIZxoE0.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/nsis-LdVXkNf5.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/ntriples-BfvgReVJ.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/octave-Ck1zUtKM.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/oz-BzwKVEFT.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/pascal--L3eBynH.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/perl-CdXCOZ3F.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/pig-CevX1Tat.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/powershell-CFHJl5sT.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/properties-C78fOPTZ.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/protobuf-ChK-085T.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/pug-DeIclll2.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/puppet-DMA9R1ak.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/python-BuPzkPfP.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/q-pXgVlZs6.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/r-B6wPVr8A.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/rpm-CTu-6PCP.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/ruby-B2Rjki9n.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/sas-B4kiWyti.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/scheme-C41bIUwD.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/shell-CjFT_Tl9.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/sieve-C3Gn_uJK.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/simple-mode-GW_nhZxv.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/smalltalk-CnHTOXQT.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/solr-DehyRSwq.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/sparql-DkYu6x3z.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/spreadsheet-BCZA_wO0.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/sql-D0XecflT.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/stex-C3f8Ysf7.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/stylus-B533Al4x.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/swift-BzpIVaGY.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/tcl-DVfN8rqt.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/textile-CnDTJFAw.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/tiddlywiki-DO-Gjzrf.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/tiki-DGYXhP31.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/toml-Bm5Em-hy.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/troff-wAsdV37c.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/ttcn-cfg-B9xdYoR4.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/ttcn-CfJYG6tj.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/turtle-B1tBg_DP.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/vb-CmGdzxic.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/vbscript-BuJXcnF6.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/velocity-D8B20fx6.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/verilog-C6RDOZhf.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/vhdl-lSbBsy5d.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/webidl-ZXfAyPTL.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/xquery-DzFWVndE.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 1,
+                    "filename": "frontend/dist/assets/yacas-BJ4BC0dw.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/assets/z80-Hz9HOZM7.js"
+                },
+                {
+                    "blank": 0,
+                    "code": 14,
+                    "comment": 0,
+                    "filename": "frontend/dist/index.html"
+                },
+                {
+                    "filename": "frontend/dist/logo.jpg",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/dist/vite.svg"
+                },
+                {
+                    "blank": 1,
+                    "code": 12,
+                    "comment": 0,
+                    "filename": "frontend/Dockerfile"
+                },
+                {
+                    "blank": 0,
+                    "code": 13,
+                    "comment": 0,
+                    "filename": "frontend/index.html"
+                },
+                {
+                    "blank": 127,
+                    "code": 3732,
+                    "comment": 0,
+                    "filename": "frontend/package-lock.json"
+                },
+                {
+                    "blank": 0,
+                    "code": 32,
+                    "comment": 0,
+                    "filename": "frontend/package.json"
+                },
+                {
+                    "filename": "frontend/public/logo.jpg",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/public/vite.svg"
+                },
+                {
+                    "blank": 6,
+                    "code": 11,
+                    "comment": 1,
+                    "filename": "frontend/README.md"
+                },
+                {
+                    "blank": 2,
+                    "code": 10,
+                    "comment": 0,
+                    "filename": "frontend/src/api/health.ts"
+                },
+                {
+                    "blank": 2,
+                    "code": 19,
+                    "comment": 0,
+                    "filename": "frontend/src/api/importExport.ts"
+                },
+                {
+                    "blank": 4,
+                    "code": 11,
+                    "comment": 0,
+                    "filename": "frontend/src/api/metadata.ts"
+                },
+                {
+                    "blank": 6,
+                    "code": 88,
+                    "comment": 0,
+                    "filename": "frontend/src/api/note.ts"
+                },
+                {
+                    "blank": 10,
+                    "code": 168,
+                    "comment": 4,
+                    "filename": "frontend/src/api/paper.ts"
+                },
+                {
+                    "blank": 3,
+                    "code": 29,
+                    "comment": 3,
+                    "filename": "frontend/src/api/request.ts"
+                },
+                {
+                    "blank": 6,
+                    "code": 69,
+                    "comment": 0,
+                    "filename": "frontend/src/api/tag.ts"
+                },
+                {
+                    "blank": 2,
+                    "code": 14,
+                    "comment": 0,
+                    "filename": "frontend/src/App.vue"
+                },
+                {
+                    "filename": "frontend/src/assets/logo.jpg",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 0,
+                    "code": 1,
+                    "comment": 0,
+                    "filename": "frontend/src/assets/vue.svg"
+                },
+                {
+                    "blank": 6,
+                    "code": 35,
+                    "comment": 0,
+                    "filename": "frontend/src/components/HelloWorld.vue"
+                },
+                {
+                    "blank": 6,
+                    "code": 26,
+                    "comment": 1,
+                    "filename": "frontend/src/composables/useTheme.ts"
+                },
+                {
+                    "blank": 5,
+                    "code": 81,
+                    "comment": 0,
+                    "filename": "frontend/src/layouts/DefaultLayout.vue"
+                },
+                {
+                    "blank": 4,
+                    "code": 17,
+                    "comment": 1,
+                    "filename": "frontend/src/main.ts"
+                },
+                {
+                    "blank": 5,
+                    "code": 52,
+                    "comment": 0,
+                    "filename": "frontend/src/pages/home/index.vue"
+                },
+                {
+                    "blank": 24,
+                    "code": 211,
+                    "comment": 3,
+                    "filename": "frontend/src/pages/papers/components/PaperUploadDialog.vue"
+                },
+                {
+                    "blank": 22,
+                    "code": 118,
+                    "comment": 1,
+                    "filename": "frontend/src/pages/papers/components/PdfViewer.vue"
+                },
+                {
+                    "blank": 47,
+                    "code": 362,
+                    "comment": 1,
+                    "filename": "frontend/src/pages/papers/detail.vue"
+                },
+                {
+                    "blank": 32,
+                    "code": 332,
+                    "comment": 5,
+                    "filename": "frontend/src/pages/papers/index.vue"
+                },
+                {
+                    "blank": 17,
+                    "code": 128,
+                    "comment": 2,
+                    "filename": "frontend/src/pages/papers/note-edit.vue"
+                },
+                {
+                    "blank": 11,
+                    "code": 102,
+                    "comment": 0,
+                    "filename": "frontend/src/pages/tags/index.vue"
+                },
+                {
+                    "blank": 3,
+                    "code": 45,
+                    "comment": 0,
+                    "filename": "frontend/src/router/index.ts"
+                },
+                {
+                    "blank": 5,
+                    "code": 49,
+                    "comment": 0,
+                    "filename": "frontend/src/stores/paperStore.ts"
+                },
+                {
+                    "blank": 6,
+                    "code": 64,
+                    "comment": 0,
+                    "filename": "frontend/src/stores/tagStore.ts"
+                },
+                {
+                    "blank": 9,
+                    "code": 70,
+                    "comment": 0,
+                    "filename": "frontend/src/style.css"
+                },
+                {
+                    "blank": 23,
+                    "code": 137,
+                    "comment": 5,
+                    "filename": "frontend/src/styles/index.css"
+                },
+                {
+                    "blank": 1,
+                    "code": 13,
+                    "comment": 0,
+                    "filename": "frontend/src/types/api.ts"
+                },
+                {
+                    "blank": 2,
+                    "code": 15,
+                    "comment": 0,
+                    "filename": "frontend/src/types/enums.ts"
+                },
+                {
+                    "blank": 6,
+                    "code": 72,
+                    "comment": 0,
+                    "filename": "frontend/src/types/paper.ts"
+                },
+                {
+                    "blank": 1,
+                    "code": 14,
+                    "comment": 1,
+                    "filename": "frontend/tsconfig.app.json"
+                },
+                {
+                    "blank": 0,
+                    "code": 7,
+                    "comment": 0,
+                    "filename": "frontend/tsconfig.json"
+                },
+                {
+                    "blank": 2,
+                    "code": 22,
+                    "comment": 2,
+                    "filename": "frontend/tsconfig.node.json"
+                },
+                {
+                    "blank": 1,
+                    "code": 24,
+                    "comment": 1,
+                    "filename": "frontend/vite.config.ts"
+                },
+                {
+                    "blank": 1,
+                    "code": 4,
+                    "comment": 0,
+                    "filename": "logs/backend.log"
+                },
+                {
+                    "blank": 2,
+                    "code": 8,
+                    "comment": 0,
+                    "filename": "logs/frontend.log"
+                },
+                {
+                    "blank": 5,
+                    "code": 30,
+                    "comment": 64,
+                    "filename": "OWNERSHIP.md"
+                }
+            ]
+        }
+    ]
+}
