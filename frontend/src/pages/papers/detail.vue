@@ -194,6 +194,131 @@
                 </el-card>
               </div>
             </el-card>
+
+            <el-card class="panel-card">
+              <template #header>
+                <div class="panel-header">
+                  <span>结构化概要</span>
+                  <div class="panel-actions">
+                    <el-button size="small" :loading="summaryLoading" @click="fetchSummary">刷新</el-button>
+                    <el-button type="primary" size="small" :loading="summaryGenerating" @click="handleGenerateSummary">
+                      生成概要
+                    </el-button>
+                    <el-button
+                      size="small"
+                      :loading="summaryDownloadLoading"
+                      :disabled="!summaryMarkdown"
+                      @click="handleDownloadSummary"
+                    >
+                      下载 .md
+                    </el-button>
+                  </div>
+                </div>
+              </template>
+
+              <el-alert
+                v-if="summaryError"
+                :title="summaryError"
+                type="error"
+                :closable="false"
+                show-icon
+                class="panel-alert"
+              />
+
+              <div v-if="summaryLoading" class="panel-loading">
+                <el-skeleton :rows="4" animated />
+              </div>
+
+              <div v-else-if="summaryError" class="panel-retry">
+                <el-button type="danger" plain @click="fetchSummary">重试加载概要</el-button>
+              </div>
+
+              <div v-else>
+                <div class="summary-meta-row">
+                  <span>状态：</span>
+                  <el-tag :type="summaryStatusType">{{ summaryStatusLabel }}</el-tag>
+                  <span class="summary-meta-time">更新时间：{{ formatDateTime(summaryState?.generatedAt) }}</span>
+                </div>
+                <div class="backup-time error" v-if="summaryState?.error">
+                  失败原因：{{ summaryState?.error }}
+                </div>
+                <el-empty v-if="!summaryMarkdown" description="暂无概要内容，点击“生成概要”开始。" />
+                <pre v-else class="summary-markdown">{{ summaryMarkdown }}</pre>
+              </div>
+            </el-card>
+
+            <el-card class="panel-card">
+              <template #header>
+                <div class="panel-header">
+                  <span>仓库链接提取</span>
+                  <div class="panel-actions">
+                    <el-button size="small" :loading="repoLinksLoading" @click="fetchRepoLinks">刷新</el-button>
+                    <el-button type="primary" size="small" :loading="repoLinksExtracting" @click="handleExtractRepoLinks">
+                      从 PDF 提取链接
+                    </el-button>
+                    <el-button
+                      size="small"
+                      :disabled="applyRepoLinksDisabled"
+                      :loading="repoLinksApplying"
+                      @click="handleApplyRepoLinks"
+                    >
+                      应用到仓库索引
+                    </el-button>
+                  </div>
+                </div>
+              </template>
+
+              <el-alert
+                v-if="repoLinksError"
+                :title="repoLinksError"
+                type="error"
+                :closable="false"
+                show-icon
+                class="panel-alert"
+              />
+
+              <div v-if="repoLinksLoading" class="panel-loading">
+                <el-skeleton :rows="4" animated />
+              </div>
+
+              <div v-else-if="repoLinksError" class="panel-retry">
+                <el-button type="danger" plain @click="fetchRepoLinks">重试加载链接</el-button>
+              </div>
+
+              <el-empty
+                v-else-if="repoLinkCandidates.length === 0"
+                description="暂无候选链接，点击“从 PDF 提取链接”进行扫描。"
+              />
+
+              <div v-else class="repo-links-list">
+                <div class="repo-meta-row">
+                  共 {{ repoLinkCandidates.length }} 条候选，已选择 {{ selectedRepoLinkIds.length }} 条
+                </div>
+                <el-checkbox-group v-model="selectedRepoLinkIds" class="repo-checkbox-group">
+                  <div class="repo-link-item" v-for="item in repoLinkCandidates" :key="item.id">
+                    <el-checkbox :label="item.id">
+                      <span class="repo-link-url">{{ item.url }}</span>
+                    </el-checkbox>
+                    <div class="repo-link-meta">
+                      <el-tag size="small" type="info">{{ item.provider }}</el-tag>
+                      <el-tag v-if="item.status" size="small" :type="item.status === 'APPLIED' ? 'success' : 'warning'">
+                        {{ item.status }}
+                      </el-tag>
+                      <span v-if="item.confidence !== undefined" class="repo-confidence">
+                        置信度：{{ Number(item.confidence).toFixed(2) }}
+                      </span>
+                      <span v-if="item.pageNo !== undefined" class="repo-confidence">
+                        页码：{{ item.pageNo }}
+                      </span>
+                      <el-link :href="item.url" target="_blank" rel="noopener noreferrer" type="primary">打开链接</el-link>
+                    </div>
+                    <div class="repo-source" v-if="item.sourceText">
+                      片段：{{ item.sourceText }}
+                    </div>
+                  </div>
+                </el-checkbox-group>
+              </div>
+            </el-card>
           </el-col>
         </el-row>
       </el-tab-pane>
@@ -229,20 +354,26 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  applyPaperRepoLinks,
   getPaperDetail,
+  getPaperRepoLinks,
+  getPaperSummary,
   updatePaperStatus,
   togglePaperStar,
   deletePaper,
   backupPaperToOss,
   getPaperBackupStatus,
   restorePaperFromOss,
+  extractPaperRepoLinks,
+  generatePaperSummary,
+  downloadPaperSummary,
   type PaperBackupStatus
 } from '../../api/paper'
 import { getPaperNotes, createNote as apiCreateNote } from '../../api/note'
 import { enrichPaper } from '../../api/metadata'
 import { exportPapers } from '../../api/importExport'
 import { syncRepo } from '../../api/repo'
-import type { Paper, Note } from '../../types/paper'
+import type { Paper, Note, PaperRepoLinkCandidate, PaperSummary, PaperSummaryStatus } from '../../types/paper'
 import { ReadingStatusLabel } from '../../types/enums'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Delete, Star, StarFilled, Plus, Document, Refresh, CopyDocument } from '@element-plus/icons-vue'
@@ -262,6 +393,17 @@ const notes = ref<Note[]>([])
 const activeTab = ref('details')
 const backupState = ref<PaperBackupStatus | null>(null)
 const lastReadingStatus = ref<Paper['readingStatus']>('UNREAD')
+const summaryState = ref<PaperSummary | null>(null)
+const summaryLoading = ref(false)
+const summaryGenerating = ref(false)
+const summaryDownloadLoading = ref(false)
+const summaryError = ref('')
+const repoLinksLoading = ref(false)
+const repoLinksExtracting = ref(false)
+const repoLinksApplying = ref(false)
+const repoLinksError = ref('')
+const repoLinkCandidates = ref<PaperRepoLinkCandidate[]>([])
+const selectedRepoLinkIds = ref<number[]>([])
 
 const pdfUrl = computed(() => `/api/v1/papers/${paperId}/file`)
 
@@ -285,6 +427,8 @@ const fetchData = async () => {
   } finally {
     loading.value = false
   }
+
+  await Promise.allSettled([fetchSummary(false), fetchRepoLinks(false)])
 }
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -365,6 +509,11 @@ const formatDate = (str: string) => {
   return new Date(str).toLocaleDateString()
 }
 
+const formatDateTime = (str?: string) => {
+  if (!str) return '-'
+  return new Date(str).toLocaleString()
+}
+
 const getCcfColor = (rank: string) => {
   switch (rank) {
     case 'A': return '#F56C6C'
@@ -400,6 +549,159 @@ const handleCopyBibtex = async () => {
   } catch (error) {
     console.error(error)
     ElMessage.error('复制失败')
+  }
+}
+
+const summaryMarkdown = computed(() => summaryState.value?.markdown || '')
+
+const summaryStatusLabel = computed(() => {
+  const status = summaryState.value?.status
+  if (!status) return '未生成'
+  if (status === 'SUCCESS') return '生成成功'
+  if (status === 'FAILED') return '生成失败'
+  if (status === 'QUEUED' || status === 'PENDING' || status === 'GENERATING') return '生成中'
+  return status
+})
+
+const summaryStatusType = computed(() => {
+  const status = summaryState.value?.status
+  if (!status) return 'info'
+  if (status === 'SUCCESS') return 'success'
+  if (status === 'FAILED') return 'danger'
+  if (status === 'QUEUED' || status === 'PENDING' || status === 'GENERATING') return 'warning'
+  return 'info'
+})
+
+const fetchSummary = async (showErrorToast = true) => {
+  summaryLoading.value = true
+  summaryError.value = ''
+  try {
+    const res = await getPaperSummary(paperId)
+    if (res.code === 200) {
+      summaryState.value = res.data
+    }
+  } catch (error) {
+    summaryState.value = null
+    summaryError.value = getErrorMessage(error, '获取概要失败，请稍后重试')
+    if (showErrorToast) {
+      ElMessage.error(summaryError.value)
+    }
+  } finally {
+    summaryLoading.value = false
+  }
+}
+
+const handleGenerateSummary = async () => {
+  summaryGenerating.value = true
+  summaryError.value = ''
+  try {
+    const res = await generatePaperSummary(paperId)
+    if (res.code === 200) {
+      summaryState.value = res.data
+      const status = res.data.status as PaperSummaryStatus
+      if (status === 'FAILED') {
+        ElMessage.error(res.data.error || res.data.message || '概要生成失败')
+      } else if (status === 'SUCCESS') {
+        ElMessage.success('概要生成成功')
+      } else {
+        ElMessage.info(res.data.message || '已提交概要生成任务，请稍后刷新查看结果')
+      }
+    }
+  } catch (error) {
+    summaryError.value = getErrorMessage(error, '生成概要失败，请检查 AI 配置后重试')
+    ElMessage.error(summaryError.value)
+  } finally {
+    summaryGenerating.value = false
+    await fetchSummary(false)
+  }
+}
+
+const handleDownloadSummary = async () => {
+  if (!summaryMarkdown.value) {
+    ElMessage.warning('暂无可下载的概要内容')
+    return
+  }
+  summaryDownloadLoading.value = true
+  try {
+    const blob = await downloadPaperSummary(paperId)
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `paper_${paperId}_summary.md`
+    link.click()
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('概要已下载')
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error, '下载概要失败，请稍后重试'))
+  } finally {
+    summaryDownloadLoading.value = false
+  }
+}
+
+const applyRepoLinksDisabled = computed(() => {
+  if (repoLinksLoading.value || repoLinksApplying.value || repoLinksExtracting.value) return true
+  return selectedRepoLinkIds.value.length === 0
+})
+
+const fetchRepoLinks = async (showErrorToast = true) => {
+  repoLinksLoading.value = true
+  repoLinksError.value = ''
+  try {
+    const res = await getPaperRepoLinks(paperId)
+    if (res.code === 200) {
+      repoLinkCandidates.value = res.data.candidates || []
+      selectedRepoLinkIds.value = []
+    }
+  } catch (error) {
+    repoLinkCandidates.value = []
+    selectedRepoLinkIds.value = []
+    repoLinksError.value = getErrorMessage(error, '获取仓库候选链接失败，请稍后重试')
+    if (showErrorToast) {
+      ElMessage.error(repoLinksError.value)
+    }
+  } finally {
+    repoLinksLoading.value = false
+  }
+}
+
+const handleExtractRepoLinks = async () => {
+  repoLinksExtracting.value = true
+  repoLinksError.value = ''
+  try {
+    const res = await extractPaperRepoLinks(paperId)
+    if (res.code === 200) {
+      repoLinkCandidates.value = res.data.candidates || []
+      selectedRepoLinkIds.value = (res.data.candidates || []).map((item) => item.id)
+      ElMessage.success(res.data.message || `提取完成，共 ${repoLinkCandidates.value.length} 条候选链接`)
+    }
+  } catch (error) {
+    repoLinksError.value = getErrorMessage(error, '提取仓库链接失败，请检查 PDF 可读性后重试')
+    ElMessage.error(repoLinksError.value)
+  } finally {
+    repoLinksExtracting.value = false
+  }
+}
+
+const handleApplyRepoLinks = async () => {
+  if (applyRepoLinksDisabled.value) {
+    ElMessage.warning('请先选择至少一个候选链接')
+    return
+  }
+  repoLinksApplying.value = true
+  try {
+    const res = await applyPaperRepoLinks(paperId, {
+      candidateIds: selectedRepoLinkIds.value,
+      autoRebuildReadme: true
+    })
+    if (res.code === 200) {
+      ElMessage.success(res.data.message || '候选链接已应用到仓库索引')
+      repoLinkCandidates.value = res.data.candidates || repoLinkCandidates.value
+      await fetchRepoLinks(false)
+    }
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error, '应用候选链接失败，请稍后重试'))
+  } finally {
+    repoLinksApplying.value = false
   }
 }
 
@@ -634,6 +936,104 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.panel-card {
+  margin-top: 16px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.panel-alert {
+  margin-bottom: 10px;
+}
+
+.panel-loading,
+.panel-retry {
+  margin-top: 8px;
+}
+
+.summary-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.summary-meta-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.summary-markdown {
+  margin: 0;
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafafa;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.repo-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.repo-meta-row {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.repo-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.repo-link-item {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.repo-link-url {
+  word-break: break-all;
+}
+
+.repo-link-meta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.repo-confidence {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.repo-source {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .note-item {
