@@ -63,6 +63,7 @@
                   </el-tag>
                   <span class="summary-time">时间：{{ formatTime(item.generatedAt) }}</span>
                 </div>
+                <div class="summary-message" v-if="item.message">{{ item.message }}</div>
               </div>
               <div class="summary-item-actions">
                 <el-button
@@ -120,13 +121,24 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return typeof msg === 'string' && msg.trim() ? msg.trim() : fallback
 }
 
+const normalizeHomeSummaries = (raw: unknown): HomeSummaryItem[] => {
+  if (Array.isArray(raw)) return raw as HomeSummaryItem[]
+  if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, any>
+    if (Array.isArray(obj.content)) return obj.content as HomeSummaryItem[]
+    if (Array.isArray(obj.items)) return obj.items as HomeSummaryItem[]
+    if (Array.isArray(obj.records)) return obj.records as HomeSummaryItem[]
+  }
+  return []
+}
+
 const fetchSummaries = async () => {
   summaryLoading.value = true
   summaryError.value = ''
   try {
     const res = await getHomeSummaries(10)
     if (res.code === 200) {
-      summaries.value = res.data || []
+      summaries.value = normalizeHomeSummaries(res.data)
     }
   } catch (error) {
     summaryError.value = getErrorMessage(error, '获取结构化概要失败，请稍后重试')
@@ -246,6 +258,12 @@ onMounted(() => {
 }
 
 .summary-time {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.summary-message {
+  margin-top: 6px;
   color: var(--text-secondary);
   font-size: 12px;
 }
