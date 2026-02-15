@@ -280,9 +280,18 @@
                       size="small"
                       :disabled="applyRepoLinksDisabled"
                       :loading="repoLinksApplying"
-                      @click="handleApplyRepoLinks"
+                      @click="handleApplyRepoLinks()"
                     >
                       应用到仓库索引
+                    </el-button>
+                    <el-button
+                      size="small"
+                      type="success"
+                      :disabled="applyAndSyncDisabled"
+                      :loading="repoLinksApplyAndSyncing"
+                      @click="handleApplyRepoLinksAndSync"
+                    >
+                      应用并同步 paper-code
                     </el-button>
                   </div>
                 </div>
@@ -337,6 +346,34 @@
                     </div>
                   </div>
                 </el-checkbox-group>
+              </div>
+
+              <div class="repo-sync-feedback" v-if="repoLinksSyncing || repoLinksApplyAndSyncing || repoLinksSyncResult || repoLinksSyncError">
+                <div class="repo-meta-row">paper-code 同步结果</div>
+                <el-tag size="small" :type="repoLinksSyncTagType">{{ repoLinksSyncTagLabel }}</el-tag>
+                <el-progress :percentage="repoLinksSyncProgress" :status="repoLinksSyncTagType === 'danger' ? 'exception' : undefined" />
+                <div class="repo-meta-row">{{ repoLinksSyncSummaryText }}</div>
+                <div class="backup-time error" v-if="repoLinksSyncError">失败原因：{{ repoLinksSyncError }}</div>
+                <div class="repo-meta-row" v-if="repoLinksSyncResult?.message">信息：{{ repoLinksSyncResult?.message }}</div>
+
+                <el-table
+                  v-if="repoLinksSyncResult?.results?.length"
+                  :data="repoLinksSyncResult.results"
+                  size="small"
+                  border
+                  class="repo-sync-table"
+                >
+                  <el-table-column prop="paperTitle" label="论文" min-width="180" />
+                  <el-table-column prop="repoUrl" label="仓库地址" min-width="280" />
+                  <el-table-column label="状态" width="110">
+                    <template #default="scope">
+                      <el-tag size="small" :type="getRepoLinkSyncItemStatusType(scope.row.status)">
+                        {{ getRepoLinkSyncItemStatusLabel(scope.row.status) }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="message" label="结果信息" min-width="220" />
+                </el-table>
               </div>
             </el-card>
           </el-col>
@@ -412,8 +449,9 @@ import {
 import { getPaperNotes, createNote as apiCreateNote } from '../../api/note'
 import { enrichPaper } from '../../api/metadata'
 import { exportPapers } from '../../api/importExport'
-import { syncRepo } from '../../api/repo'
+import { syncPaperCodeToRepo, syncRepo } from '../../api/repo'
 import type { Paper, Note, PaperRepoLinkCandidate, PaperSummary, PaperSummaryStatus } from '../../types/paper'
+import type { PaperCodeSyncItemResult, PaperCodeSyncResponse } from '../../types/repo'
 import { ReadingStatusLabel } from '../../types/enums'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Delete, Star, StarFilled, Plus, Document, Refresh, CopyDocument } from '@element-plus/icons-vue'
@@ -444,6 +482,10 @@ const repoLinksApplying = ref(false)
 const repoLinksError = ref('')
 const repoLinkCandidates = ref<PaperRepoLinkCandidate[]>([])
 const selectedRepoLinkIds = ref<number[]>([])
+const repoLinksSyncing = ref(false)
+const repoLinksApplyAndSyncing = ref(false)
+const repoLinksSyncError = ref('')
+const repoLinksSyncResult = ref<PaperCodeSyncResponse | null>(null)
 
 const NOTE_THEME_STORAGE_KEY = "notes-highlight-theme"
 const noteThemeOptions = [
@@ -522,6 +564,145 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   const apiMsg = (error as any)?.response?.data?.message
   const msg = (typeof apiMsg === 'string' && apiMsg.trim()) || (error as any)?.message
   return typeof msg === 'string' && msg.trim() ? msg.trim() : fallback
+}
+
+const normalizeNumber = (value: unknown, fallback = 0) => {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : fallback
+}
+
+const normalizeSyncItem = (raw: unknown): PaperCodeSyncItemResult | null => {
+  if (!raw || typeof raw !== 'object') return null
+  const src = raw as Record<string, any>
+  const status = typeof src.status === 'string' ? src.status.toUpperCase() : undefined
+  return {
+    paperId: normalizeNumber(src.paperId ?? src.paper_id, 0) || undefined,
+    paperTitle: src.paperTitle ?? src.paper_title,
+    repoUrl: src.repoUrl ?? src.repo_url,
+    status,
+    message: typeof src.message === 'string' ? src.message : undefined,
+    syncedAt: src.syncedAt ?? src.synced_at
+  }
+}
+
+const normalizePaperCodeSyncResult = (raw: unknown): PaperCodeSyncResponse => {
+  const src = raw && typeof raw === 'object' ? (raw as Record<string, any>) : {}
+  const resultListRaw = Array.isArray(src.results)
+    ? src.results
+    : Array.isArray(src.items)
+      ? src.items
+      : Array.isArray(src.details)
+        ? src.details
+        : []
+  const results = resultListRaw
+    .map(normalizeSyncItem)
+    .filter((item): item is PaperCodeSyncItemResult => Boolean(item))
+
+  const totalCount = normalizeNumber(src.totalCount ?? src.total ?? results.length, results.length)
+  const successCount = normalizeNumber(
+    src.successCount ?? src.success ?? results.filter((item) => item.status === 'SUCCESS').length,
+    0
+  )
+  const failedCount = normalizeNumber(
+    src.failedCount ?? src.failed ?? results.filter((item) => item.status === 'FAILED').length,
+    0
+  )
+  const skippedCount = normalizeNumber(
+    src.skippedCount ?? src.skipped ?? results.filter((item) => item.status === 'SKIPPED').length,
+    0
+  )
+
+  const computedProgress = totalCount > 0
+    ? Math.round(((successCount + failedCount + skippedCount) / totalCount) * 100)
+    : 0
+
+  const progress = normalizeNumber(src.progress, computedProgress)
+
+  return {
+    taskId: src.taskId ?? src.task_id,
+    status: typeof src.status === 'string' ? src.status : undefined,
+    message: typeof src.message === 'string' ? src.message : undefined,
+    totalCount,
+    successCount,
+    failedCount,
+    skippedCount,
+    startedAt: src.startedAt ?? src.started_at,
+    finishedAt: src.finishedAt ?? src.finished_at,
+    progress: Math.max(0, Math.min(100, progress)),
+    results
+  }
+}
+
+const repoLinksSyncProgress = computed(() => {
+  if (!repoLinksSyncResult.value) return repoLinksSyncing.value ? 10 : 0
+  return Math.max(0, Math.min(100, normalizeNumber(repoLinksSyncResult.value.progress)))
+})
+
+const repoLinksSyncTagType = computed(() => {
+  if (repoLinksSyncing.value || repoLinksApplyAndSyncing.value) return 'warning'
+  if (!repoLinksSyncResult.value) return 'info'
+  if ((repoLinksSyncResult.value.failedCount || 0) > 0) return 'danger'
+  if ((repoLinksSyncResult.value.totalCount || 0) > 0) return 'success'
+  return 'info'
+})
+
+const repoLinksSyncTagLabel = computed(() => {
+  if (repoLinksSyncing.value || repoLinksApplyAndSyncing.value) return '同步中'
+  if (!repoLinksSyncResult.value) return '未开始'
+  if ((repoLinksSyncResult.value.failedCount || 0) > 0) return '部分失败'
+  if ((repoLinksSyncResult.value.totalCount || 0) <= 0) return '无数据'
+  return '完成'
+})
+
+const repoLinksSyncSummaryText = computed(() => {
+  if (!repoLinksSyncResult.value) return '尚未执行 paper-code 同步。'
+  const total = repoLinksSyncResult.value.totalCount || 0
+  const success = repoLinksSyncResult.value.successCount || 0
+  const failed = repoLinksSyncResult.value.failedCount || 0
+  const skipped = repoLinksSyncResult.value.skippedCount || 0
+  return '总计 ' + total + ' 条，成功 ' + success + ' 条，失败 ' + failed + ' 条，跳过 ' + skipped + ' 条。'
+})
+
+const getRepoLinkSyncItemStatusType = (status?: string) => {
+  if (status === 'SUCCESS') return 'success'
+  if (status === 'FAILED') return 'danger'
+  if (status === 'SKIPPED') return 'warning'
+  return 'info'
+}
+
+const getRepoLinkSyncItemStatusLabel = (status?: string) => {
+  if (status === 'SUCCESS') return '成功'
+  if (status === 'FAILED') return '失败'
+  if (status === 'SKIPPED') return '跳过'
+  if (status === 'PENDING') return '处理中'
+  return status || '-'
+}
+
+const syncPaperCodeForCurrentPaper = async () => {
+  repoLinksSyncing.value = true
+  repoLinksSyncError.value = ''
+  try {
+    const res = await syncPaperCodeToRepo({ paperId })
+    if (res.code === 200) {
+      repoLinksSyncResult.value = normalizePaperCodeSyncResult(res.data)
+      const failed = repoLinksSyncResult.value.failedCount || 0
+      const summaryMessage = repoLinksSyncResult.value.message || repoLinksSyncSummaryText.value
+      if (failed > 0) {
+        ElMessage.warning(summaryMessage)
+      } else {
+        ElMessage.success(summaryMessage)
+      }
+      return true
+    }
+    return false
+  } catch (error) {
+    const message = getErrorMessage(error, '同步到 paper-code 失败，请检查设置页仓库配置')
+    repoLinksSyncError.value = message
+    ElMessage.error(message)
+    return false
+  } finally {
+    repoLinksSyncing.value = false
+  }
 }
 
 const refreshBackupStatus = async (showMessageOnError = false) => {
@@ -730,9 +911,11 @@ const handleDownloadSummary = async () => {
 }
 
 const applyRepoLinksDisabled = computed(() => {
-  if (repoLinksLoading.value || repoLinksApplying.value || repoLinksExtracting.value) return true
+  if (repoLinksLoading.value || repoLinksApplying.value || repoLinksExtracting.value || repoLinksSyncing.value || repoLinksApplyAndSyncing.value) return true
   return selectedRepoLinkIds.value.length === 0
 })
+
+const applyAndSyncDisabled = computed(() => applyRepoLinksDisabled.value || repoLinksApplyAndSyncing.value || repoLinksSyncing.value)
 
 const fetchRepoLinks = async (showErrorToast = true) => {
   repoLinksLoading.value = true
@@ -773,12 +956,18 @@ const handleExtractRepoLinks = async () => {
   }
 }
 
-const handleApplyRepoLinks = async () => {
+const handleApplyRepoLinks = async (syncAfterApply = false) => {
   if (applyRepoLinksDisabled.value) {
     ElMessage.warning('请先选择至少一个候选链接')
     return
   }
-  repoLinksApplying.value = true
+
+  if (syncAfterApply) {
+    repoLinksApplyAndSyncing.value = true
+  } else {
+    repoLinksApplying.value = true
+  }
+
   try {
     const res = await applyPaperRepoLinks(paperId, {
       candidateIds: selectedRepoLinkIds.value,
@@ -788,12 +977,23 @@ const handleApplyRepoLinks = async () => {
       ElMessage.success(res.data.message || '候选链接已应用到仓库索引')
       repoLinkCandidates.value = res.data.candidates || repoLinkCandidates.value
       await fetchRepoLinks(false)
+      if (syncAfterApply) {
+        await syncPaperCodeForCurrentPaper()
+      }
     }
   } catch (error) {
     ElMessage.error(getErrorMessage(error, '应用候选链接失败，请稍后重试'))
   } finally {
-    repoLinksApplying.value = false
+    if (syncAfterApply) {
+      repoLinksApplyAndSyncing.value = false
+    } else {
+      repoLinksApplying.value = false
+    }
   }
+}
+
+const handleApplyRepoLinksAndSync = async () => {
+  await handleApplyRepoLinks(true)
 }
 
 const currentBackupStatus = computed(() => {
@@ -1146,6 +1346,19 @@ onMounted(() => {
   color: var(--text-secondary);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.repo-sync-feedback {
+  margin-top: 12px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.repo-sync-table {
+  margin-top: 4px;
 }
 
 .note-item {
