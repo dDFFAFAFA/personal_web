@@ -33,11 +33,22 @@ services:
       DB_NAME: personal_web
       DB_USER: postgres
       DB_PASSWORD: postgres
-      UPLOAD_PATH: /app/uploads/papers
+      STORAGE_MODE: local_with_oss_backup
+      UPLOAD_PATH: /srv/personal-web/uploads
+      REPO_BASE_WORKDIR: /srv/personal-web/repos
+      REPO_SSH_PRIVATE_KEY_PATH: /etc/personal-web/keys/id_ed25519
+      OSS_PROVIDER: aliyun
+      OSS_ENDPOINT: ${OSS_ENDPOINT:-}
+      OSS_BUCKET: ${OSS_BUCKET:-}
+      OSS_REGION: ${OSS_REGION:-}
+      OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID:-}
+      OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET:-}
     ports:
       - "8080:8080"
     volumes:
-      - ./data/uploads:/app/uploads
+      - ./data/uploads:/srv/personal-web/uploads
+      - ./data/repos:/srv/personal-web/repos
+      - ./data/keys:/etc/personal-web/keys:ro
 
   frontend:
     build:

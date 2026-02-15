@@ -1,4 +1,5 @@
 import type { ReadingStatus } from './enums'
+import type { RepoProvider } from './repo'
 
 export interface Tag {
   id: number
@@ -41,6 +42,9 @@ export interface Paper {
   impactFactor?: number
   citationCount?: number
   paperUrl?: string
+  backupStatus?: 'NOT_BACKED_UP' | 'BACKED_UP' | 'FAILED'
+  backupAt?: string
+  backupError?: string
 }
 
 export interface PaperFilter {
@@ -75,4 +79,50 @@ export interface VenueRankingResponse {
   impactFactor?: number
   category: string
   type: string
+}
+
+export type PaperSummaryStatus = 'PENDING' | 'QUEUED' | 'GENERATING' | 'SUCCESS' | 'FAILED'
+
+export interface PaperSummary {
+  paperId: number
+  summaryId?: number
+  status: PaperSummaryStatus
+  provider?: string
+  model?: string
+  markdown?: string
+  generatedAt?: string
+  error?: string
+  message?: string
+}
+
+export interface HomeSummaryItem {
+  paperId: number
+  summaryId?: number
+  paperTitle?: string
+  title?: string
+  modelName?: string
+  oneSentence?: string
+  status: PaperSummaryStatus
+  generatedAt?: string
+  message?: string
+}
+
+export type RepoLinkStatus = 'CANDIDATE' | 'APPLIED' | 'REJECTED'
+export type RepoLinkProvider = RepoProvider | 'UNKNOWN'
+
+export interface PaperRepoLinkCandidate {
+  id: number
+  url: string
+  provider: RepoLinkProvider
+  status?: RepoLinkStatus
+  confidence?: number
+  sourceText?: string
+  pageNo?: number
+}
+
+export interface PaperRepoLinkListResponse {
+  paperId: number
+  candidateCount?: number
+  candidates: PaperRepoLinkCandidate[]
+  message?: string
 }

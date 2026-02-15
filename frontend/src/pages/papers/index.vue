@@ -4,18 +4,20 @@
     <div class="toolbar">
       <div class="left-tools">
         <el-input
+          class="tool-input"
+          size="small"
           v-model="paperStore.filter.keyword"
           placeholder="搜索论文..."
           prefix-icon="Search"
           clearable
           @change="handleSearch"
-          style="width: 200px"
         />
         <el-select
+          class="tool-select"
+          size="small"
           v-model="paperStore.filter.status"
           placeholder="阅读状态"
           clearable
-          style="width: 120px; margin-left: 12px"
           @change="handleSearch"
         >
           <el-option
@@ -26,10 +28,11 @@
           />
         </el-select>
         <el-select
+          class="tool-select"
+          size="small"
           v-model="paperStore.filter.ccfRank"
           placeholder="CCF 等级"
           clearable
-          style="width: 120px; margin-left: 12px"
           @change="handleSearch"
         >
           <el-option label="CCF-A" value="A" />
@@ -37,10 +40,11 @@
           <el-option label="CCF-C" value="C" />
         </el-select>
         <el-select
+          class="tool-select"
+          size="small"
           v-model="paperStore.filter.tagId"
           placeholder="标签筛选"
           clearable
-          style="width: 120px; margin-left: 12px"
           @change="handleSearch"
         >
           <el-option
@@ -53,8 +57,8 @@
         <el-checkbox
           v-model="paperStore.filter.starred"
           label="仅星标"
+          size="small"
           border
-          style="margin-left: 12px"
           @change="handleSearch"
         />
       </div>
@@ -66,9 +70,15 @@
           accept=".bib,.ris" 
           @change="handleImportFile" 
         />
-        <el-button icon="Upload" @click="triggerImport" style="margin-right: 12px">导入</el-button>
+        <el-button size="small" icon="Upload" @click="triggerImport">导入</el-button>
         
-        <el-dropdown split-button type="default" @click="handleExport('bibtex')" @command="handleExport" style="margin-right: 12px">
+        <el-dropdown
+          split-button
+          size="small"
+          type="default"
+          @click="handleExport('bibtex')"
+          @command="handleExport"
+        >
           导出 BibTeX
           <template #dropdown>
             <el-dropdown-menu>
@@ -78,7 +88,7 @@
           </template>
         </el-dropdown>
 
-        <el-button type="primary" icon="Plus" round @click="showUploadDialog = true">
+        <el-button size="small" type="primary" icon="Plus" round @click="showUploadDialog = true">
           上传论文
         </el-button>
       </div>
@@ -285,8 +295,12 @@ const handleSelectionChange = (val: any[]) => {
 
 const handleExport = async (format: string) => {
   if (format !== 'bibtex' && format !== 'ris') return // protect against command event quirks
-  
-  const ids = selectedRows.value.length > 0 ? selectedRows.value.map(r => r.id) : undefined
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请先选择论文')
+    return
+  }
+
+  const ids = selectedRows.value.map(row => row.id)
   try {
     const res = await exportPapers(format as 'bibtex' | 'ris', ids)
     // Create download link
@@ -314,9 +328,11 @@ onMounted(() => {
 .toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
   background-color: #fff;
-  padding: 16px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--border-color);
 }
@@ -324,11 +340,23 @@ onMounted(() => {
 .left-tools {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .right-tools {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tool-input {
+  width: 180px;
+}
+
+.tool-select {
+  width: 110px;
 }
 
 .title-cell {
@@ -363,5 +391,15 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 1200px) {
+  .tool-input {
+    width: 160px;
+  }
+
+  .tool-select {
+    width: 100px;
+  }
 }
 </style>

@@ -3,13 +3,24 @@ package com.changye.web.controller;
 import com.changye.web.common.ApiResponse;
 import com.changye.web.common.PageResponse;
 import com.changye.web.common.exception.BusinessException;
+import com.changye.web.dto.request.PaperRepoLinksApplyRequest;
 import com.changye.web.dto.request.PaperCreateRequest;
+import com.changye.web.dto.request.PaperSummaryGenerateRequest;
 import com.changye.web.dto.request.PaperUpdateRequest;
 import com.changye.web.dto.request.StarUpdateRequest;
 import com.changye.web.dto.request.StatusUpdateRequest;
+import com.changye.web.dto.response.PaperBackupStatusResponse;
+import com.changye.web.dto.response.PaperRepoLinkResponse;
+import com.changye.web.dto.response.PaperRepoLinksApplyResponse;
+import com.changye.web.dto.response.PaperRepoLinksExtractResponse;
 import com.changye.web.dto.response.PaperResponse;
+import com.changye.web.dto.response.PaperSummaryGenerateResponse;
+import com.changye.web.dto.response.PaperSummaryResponse;
 import com.changye.web.model.enums.ReadingStatus;
 import com.changye.web.service.PaperService;
+import com.changye.web.service.PaperRepoLinkService;
+import com.changye.web.service.PaperSummaryService;
+import com.changye.web.service.StorageBackupService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,6 +36,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,10 +60,20 @@ import org.springframework.core.io.Resource;
 public class PaperController {
 
     private final PaperService paperService;
+    private final StorageBackupService storageBackupService;
+    private final PaperSummaryService paperSummaryService;
+    private final PaperRepoLinkService paperRepoLinkService;
     private final ObjectMapper objectMapper;
 
-    public PaperController(PaperService paperService, ObjectMapper objectMapper) {
+    public PaperController(PaperService paperService,
+                           StorageBackupService storageBackupService,
+                           PaperSummaryService paperSummaryService,
+                           PaperRepoLinkService paperRepoLinkService,
+                           ObjectMapper objectMapper) {
         this.paperService = paperService;
+        this.storageBackupService = storageBackupService;
+        this.paperSummaryService = paperSummaryService;
+        this.paperRepoLinkService = paperRepoLinkService;
         this.objectMapper = objectMapper;
     }
 
@@ -71,6 +93,12 @@ public class PaperController {
                 .totalPages(page.getTotalPages())
                 .build();
         return ResponseEntity.ok(ApiResponse.success(data));
+    }
+
+    @GetMapping("/home/summaries")
+    public ResponseEntity<ApiResponse<List<PaperSummaryResponse>>> listHomeSummaries(
+            @RequestParam(defaultValue = "10") Integer limit) {
+        return ResponseEntity.ok(ApiResponse.success(paperSummaryService.listHomeSummaries(limit)));
     }
 
     @PostMapping(value = "/papers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -140,6 +168,65 @@ public class PaperController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                 .body(resource);
+    }
+
+    @PostMapping("/papers/{id}/backup")
+    public ResponseEntity<ApiResponse<PaperBackupStatusResponse>> backupPaper(@PathVariable Long id) {
+        PaperBackupStatusResponse response = storageBackupService.backupPaper(id);
+        return ResponseEntity.ok(ApiResponse.success("备份成功", response));
+    }
+
+    @GetMapping("/papers/{id}/backup-status")
+    public ResponseEntity<ApiResponse<PaperBackupStatusResponse>> getBackupStatus(@PathVariable Long id) {
+        PaperBackupStatusResponse response = storageBackupService.getBackupStatus(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/papers/{id}/restore")
+    public ResponseEntity<ApiResponse<PaperBackupStatusResponse>> restorePaper(@PathVariable Long id) {
+        PaperBackupStatusResponse response = storageBackupService.restorePaper(id);
+        return ResponseEntity.ok(ApiResponse.success("恢复成功", response));
+    }
+
+    @PostMapping("/papers/{id}/summary/generate")
+    public ResponseEntity<ApiResponse<PaperSummaryGenerateResponse>> generateSummary(
+            @PathVariable Long id,
+            @RequestBody(required = false) PaperSummaryGenerateRequest request) {
+        PaperSummaryGenerateResponse response = paperSummaryService.generateSummary(id, request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/papers/{id}/summary")
+    public ResponseEntity<ApiResponse<PaperSummaryResponse>> getSummary(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(paperSummaryService.getSummary(id)));
+    }
+
+    @GetMapping("/papers/{id}/summary/download")
+    public ResponseEntity<ByteArrayResource> downloadSummary(@PathVariable Long id) {
+        String markdown = paperSummaryService.getSummaryMarkdown(id);
+        String filename = "paper_" + id + "_summary.md";
+        ByteArrayResource resource = new ByteArrayResource(markdown.getBytes());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/markdown;charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .body(resource);
+    }
+
+    @PostMapping("/papers/{id}/repo-links/extract")
+    public ResponseEntity<ApiResponse<PaperRepoLinksExtractResponse>> extractRepoLinks(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(paperRepoLinkService.extractLinks(id)));
+    }
+
+    @GetMapping("/papers/{id}/repo-links")
+    public ResponseEntity<ApiResponse<List<PaperRepoLinkResponse>>> listRepoLinks(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(paperRepoLinkService.listLinks(id)));
+    }
+
+    @PostMapping("/papers/{id}/repo-links/apply")
+    public ResponseEntity<ApiResponse<PaperRepoLinksApplyResponse>> applyRepoLinks(
+            @PathVariable Long id,
+            @RequestBody(required = false) PaperRepoLinksApplyRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("应用成功", paperRepoLinkService.applyLinks(id, request)));
     }
 
     private <T> List<T> parseList(String raw, TypeReference<List<T>> type) {

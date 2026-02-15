@@ -29,4 +29,22 @@ spring:
 # Upload config
 app:
   upload:
-    path: ./uploads/papers
+    path: ${storage.local.base-path:./uploads/papers}
+
+storage:
+  mode: ${STORAGE_MODE:local_only}
+  local:
+    base-path: ${LOCAL_STORAGE_BASE_PATH:./uploads/papers}
+  oss:
+    provider: ${OSS_PROVIDER:aliyun}
+    endpoint: ${OSS_ENDPOINT:}
+    bucket: ${OSS_BUCKET:}
+    region: ${OSS_REGION:}
+    access-key-id: ${OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+
+repo:
+  base-workdir: ${REPO_BASE_WORKDIR:/srv/personal-web/repos}
+  ssh:
+    private-key-path: ${REPO_SSH_PRIVATE_KEY_PATH:/etc/personal-web/keys/id_ed25519}
+  command-timeout-seconds: ${REPO_COMMAND_TIMEOUT_SECONDS:120}

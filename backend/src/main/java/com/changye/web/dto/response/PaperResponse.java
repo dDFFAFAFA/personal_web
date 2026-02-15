@@ -1,6 +1,7 @@
 package com.changye.web.dto.response;
 
 import com.changye.web.model.enums.ReadingStatus;
+import com.changye.web.model.enums.BackupStatus;
 
 import java.math.BigDecimal;
 import lombok.Builder;
@@ -32,6 +33,9 @@ public class PaperResponse {
     private BigDecimal impactFactor;
     private Integer citationCount;
     private String paperUrl;
+    private BackupStatus backupStatus;
+    private OffsetDateTime backupAt;
+    private String backupError;
 
     private List<TagResponse> tags;
     private List<NoteSummaryResponse> notes; // Only in detail view

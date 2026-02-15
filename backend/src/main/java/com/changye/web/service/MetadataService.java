@@ -120,16 +120,25 @@ public class MetadataService {
         }
         if (StringUtils.hasText(response.getCcfRank())) {
             paper.setCcfRank(response.getCcfRank());
-        } else if (StringUtils.hasText(paper.getVenue())) {
-            VenueRankingResponse ranking = venueRankingService.lookup(paper.getVenue());
-            if (ranking != null) {
-                paper.setCcfRank(ranking.getCcfRank());
-                paper.setJcrQuartile(ranking.getJcrQuartile());
-                paper.setImpactFactor(ranking.getImpactFactor());
-            }
         }
         if (StringUtils.hasText(response.getJcrQuartile())) {
             paper.setJcrQuartile(response.getJcrQuartile());
+        }
+
+        if ((!StringUtils.hasText(paper.getCcfRank()) || !StringUtils.hasText(paper.getJcrQuartile()))
+                && StringUtils.hasText(paper.getVenue())) {
+            VenueRankingResponse ranking = venueRankingService.lookup(paper.getVenue());
+            if (ranking != null) {
+                if (!StringUtils.hasText(paper.getCcfRank()) && StringUtils.hasText(ranking.getCcfRank())) {
+                    paper.setCcfRank(ranking.getCcfRank());
+                }
+                if (!StringUtils.hasText(paper.getJcrQuartile()) && StringUtils.hasText(ranking.getJcrQuartile())) {
+                    paper.setJcrQuartile(ranking.getJcrQuartile());
+                }
+                if (paper.getImpactFactor() == null && ranking.getImpactFactor() != null) {
+                    paper.setImpactFactor(ranking.getImpactFactor());
+                }
+            }
         }
 
         paperRepository.save(paper);
@@ -187,7 +196,8 @@ public class MetadataService {
                                 .queryParam("query", title)
                                 .queryParam("fields", "title,authors,year,venue,abstract,citationCount,externalIds,url")
                                 .queryParam("limit", 1)
-                                .build(true)
+                                .build()
+                                .encode()
                                 .toUri(),
                         HttpMethod.GET,
                         new HttpEntity<>(buildHeaders()),

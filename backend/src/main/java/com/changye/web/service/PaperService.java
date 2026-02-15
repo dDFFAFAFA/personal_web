@@ -176,11 +176,7 @@ public class PaperService {
     @Transactional(readOnly = true)
     public Resource getPaperFile(Long id) {
         Paper paper = findPaper(id);
-        if (!StringUtils.hasText(paper.getFilePath())) {
-            throw new BusinessException(404, "文件不存在");
-        }
-
-        Path path = Paths.get(paper.getFilePath());
+        Path path = resolvePaperFilePath(paper);
         try {
             Resource resource = new UrlResource(path.toUri());
             if (!resource.exists() || !resource.isReadable()) {
@@ -228,6 +224,7 @@ public class PaperService {
             Path target = uploadDir.resolve(storedName);
             file.transferTo(target);
             paper.setFilePath(target.toString());
+            paper.setFileStorageKey(normalizeStorageKey(storedName));
             paper.setFileName(originalName);
             paper.setFileSize(file.getSize());
         } catch (IOException ex) {
@@ -237,14 +234,16 @@ public class PaperService {
     }
 
     private void deleteFile(Paper paper) {
-        if (!StringUtils.hasText(paper.getFilePath())) {
-            return;
-        }
         try {
-            Path path = Paths.get(paper.getFilePath());
+            Path path = resolvePaperFilePath(paper);
             if (Files.exists(path)) {
                 Files.delete(path);
             }
+        } catch (BusinessException ex) {
+            if (ex.getCode() == 404) {
+                return;
+            }
+            throw ex;
         } catch (IOException ex) {
             log.error("Failed to delete file for paper id={}", paper.getId(), ex);
             throw new BusinessException(500, "文件删除失败");
@@ -323,6 +322,29 @@ public class PaperService {
         return Paths.get(fileName).getFileName().toString();
     }
 
+    private String normalizeStorageKey(String storageKey) {
+        String normalized = storageKey.replace("\\", "/");
+        if (normalized.startsWith("/") || normalized.contains("..")) {
+            throw new BusinessException(400, "文件路径非法");
+        }
+        return normalized;
+    }
+
+    private Path resolvePaperFilePath(Paper paper) {
+        if (StringUtils.hasText(paper.getFileStorageKey())) {
+            Path basePath = Paths.get(uploadPath).toAbsolutePath().normalize();
+            Path resolved = basePath.resolve(normalizeStorageKey(paper.getFileStorageKey())).normalize();
+            if (!resolved.startsWith(basePath)) {
+                throw new BusinessException(400, "文件路径非法");
+            }
+            return resolved;
+        }
+        if (!StringUtils.hasText(paper.getFilePath())) {
+            throw new BusinessException(404, "文件不存在");
+        }
+        return Paths.get(paper.getFilePath()).toAbsolutePath().normalize();
+    }
+
     private void applyVenueRanking(Paper paper) {
         if (!StringUtils.hasText(paper.getVenue())) {
             return;
@@ -382,6 +404,9 @@ public class PaperService {
                 .impactFactor(paper.getImpactFactor())
                 .citationCount(paper.getCitationCount())
                 .paperUrl(paper.getPaperUrl())
+                .backupStatus(paper.getBackupStatus())
+                .backupAt(paper.getBackupAt())
+                .backupError(paper.getBackupError())
                 .tags(tagResponses)
                 .notes(noteSummaries)
                 .noteCount(noteCount)

@@ -3,8 +3,10 @@ package com.changye.web.controller;
 import com.changye.web.common.ApiResponse;
 import com.changye.web.dto.request.DoiImportRequest;
 import com.changye.web.dto.response.MetadataEnrichResponse;
+import com.changye.web.dto.response.PaperResponse;
 import com.changye.web.dto.response.VenueRankingResponse;
 import com.changye.web.service.MetadataService;
+import com.changye.web.service.PaperService;
 import com.changye.web.service.VenueRankingService;
 
 import jakarta.validation.Valid;
@@ -31,10 +33,12 @@ public class MetadataController {
 
     private final MetadataService metadataService;
     private final VenueRankingService venueRankingService;
+    private final PaperService paperService;
 
-    public MetadataController(MetadataService metadataService, VenueRankingService venueRankingService) {
+    public MetadataController(MetadataService metadataService, VenueRankingService venueRankingService, PaperService paperService) {
         this.metadataService = metadataService;
         this.venueRankingService = venueRankingService;
+        this.paperService = paperService;
     }
 
     @PostMapping("/papers/enrich/doi")
@@ -52,9 +56,9 @@ public class MetadataController {
     }
 
     @PostMapping("/papers/{id}/enrich")
-    public ResponseEntity<ApiResponse<MetadataEnrichResponse>> enrichExisting(@PathVariable Long id) {
-        MetadataEnrichResponse response = metadataService.enrichAndApply(id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+    public ResponseEntity<ApiResponse<PaperResponse>> enrichExisting(@PathVariable Long id) {
+        metadataService.enrichAndApply(id);
+        return ResponseEntity.ok(ApiResponse.success(paperService.getPaper(id)));
     }
 
     @GetMapping("/venues/lookup")

@@ -23,6 +23,10 @@
           <el-icon><CollectionTag /></el-icon>
           <template #title>标签管理</template>
         </el-menu-item>
+        <el-menu-item index="/settings">
+          <el-icon><Setting /></el-icon>
+          <template #title>系统设置</template>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
@@ -54,7 +58,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { HomeFilled, Document, CollectionTag, Fold, Expand, Moon, Sunny } from '@element-plus/icons-vue'
+import { HomeFilled, Document, CollectionTag, Fold, Expand, Moon, Sunny, Setting } from '@element-plus/icons-vue'
 import { useTheme } from '../composables/useTheme'
 
 const isCollapse = ref(false)

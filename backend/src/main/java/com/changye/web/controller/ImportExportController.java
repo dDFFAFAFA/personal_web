@@ -48,7 +48,7 @@ public class ImportExportController {
     @GetMapping("/papers/export")
     public ResponseEntity<Resource> exportPapers(
             @RequestParam("format") String format,
-            @RequestParam("ids") String ids) {
+            @RequestParam(value = "ids", required = false) String ids) {
         List<Long> paperIds = parseIds(ids);
         String normalized = format == null ? "" : format.trim().toLowerCase(Locale.ROOT);
         String content;
