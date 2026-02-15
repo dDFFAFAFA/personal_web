@@ -65,6 +65,12 @@ public class RepoConfig {
     @Column(name = "last_sync_at")
     private OffsetDateTime lastSyncAt;
 
+    @Column(name = "last_sync_error_code")
+    private Integer lastSyncErrorCode;
+
+    @Column(name = "last_sync_duration_ms")
+    private Long lastSyncDurationMs;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;

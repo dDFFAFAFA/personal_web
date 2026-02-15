@@ -13,4 +13,6 @@ public class RepoSyncStatusResponse {
     private RepoSyncMode mode;
     private String message;
     private OffsetDateTime syncedAt;
+    private Integer errorCode;
+    private Long durationMs;
 }
