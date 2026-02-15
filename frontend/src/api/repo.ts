@@ -23,7 +23,7 @@ export const getRepoSyncStatus = () =>
   request.get<any, ApiResponse<RepoSyncStatusResponse>>('/repo/sync-status')
 
 export const syncPaperCodeToRepo = (payload: PaperCodeSyncRequest = {}) =>
-  request.post<any, ApiResponse<PaperCodeSyncResponse>>('/repo/code-entries/sync', payload)
+  request.post<any, ApiResponse<PaperCodeSyncResponse>>('/repo/entries/sync', payload)
 
 export const listCodeEntries = (paperId?: number) =>
   request.get<any, ApiResponse<PaperCodeEntry[]>>('/repo/code-entries', {

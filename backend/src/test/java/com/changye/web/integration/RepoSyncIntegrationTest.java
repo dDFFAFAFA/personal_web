@@ -81,7 +81,7 @@ class RepoSyncIntegrationTest {
 
     @Test
     void syncReturns400WhenPrivateKeyMissing() throws Exception {
-        repoConfigRepository.save(buildConfig("missing-key"));
+        repoConfigRepository.save(buildConfig("missing-key", "git@github.com:example/repo-does-not-exist.git"));
         Files.deleteIfExists(TEST_KEY_PATH);
 
         mockMvc.perform(post("/api/v1/repo/sync"))
@@ -97,7 +97,7 @@ class RepoSyncIntegrationTest {
 
     @Test
     void syncReturns500AndPersistsFailureMetadata() throws Exception {
-        repoConfigRepository.save(buildConfig("git-failed"));
+        repoConfigRepository.save(buildConfig("git-failed", "https://github.com/example/repo-does-not-exist.git"));
 
         mockMvc.perform(post("/api/v1/repo/sync"))
                 .andExpect(status().isInternalServerError())
@@ -117,11 +117,11 @@ class RepoSyncIntegrationTest {
                 .andExpect(jsonPath("$.data.durationMs").isNumber());
     }
 
-    private RepoConfig buildConfig(String targetSuffix) {
+    private RepoConfig buildConfig(String targetSuffix, String repoUrl) {
         return RepoConfig.builder()
                 .id(1L)
                 .provider(RepoProvider.GITHUB)
-                .repoUrl("https://github.com/example/repo-does-not-exist.git")
+                .repoUrl(repoUrl)
                 .branchName("main")
                 .targetDir("sync-it-" + targetSuffix)
                 .autoCommitReadme(true)

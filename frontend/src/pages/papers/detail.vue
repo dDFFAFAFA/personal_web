@@ -574,9 +574,12 @@ const normalizeNumber = (value: unknown, fallback = 0) => {
 const normalizeSyncItem = (raw: unknown): PaperCodeSyncItemResult | null => {
   if (!raw || typeof raw !== 'object') return null
   const src = raw as Record<string, any>
-  const status = typeof src.status === 'string' ? src.status.toUpperCase() : undefined
+  const rawStatus = typeof src.status === 'string' ? src.status.toUpperCase() : ''
+  const rawAction = typeof src.action === 'string' ? src.action.toUpperCase() : ''
+  const status = rawStatus
+    || (rawAction === 'FAILED' ? 'FAILED' : rawAction === 'SKIP' ? 'SKIPPED' : rawAction ? 'SUCCESS' : undefined)
   return {
-    paperId: normalizeNumber(src.paperId ?? src.paper_id, 0) || undefined,
+    paperId: normalizeNumber(src.paperId ?? src.paper_id ?? src.entryId ?? src.entry_id, 0) || undefined,
     paperTitle: src.paperTitle ?? src.paper_title,
     repoUrl: src.repoUrl ?? src.repo_url,
     status,
@@ -586,6 +589,25 @@ const normalizeSyncItem = (raw: unknown): PaperCodeSyncItemResult | null => {
 }
 
 const normalizePaperCodeSyncResult = (raw: unknown): PaperCodeSyncResponse => {
+  if (Array.isArray(raw)) {
+    const results = raw
+      .map(normalizeSyncItem)
+      .filter((item): item is PaperCodeSyncItemResult => Boolean(item))
+    const totalCount = results.length
+    const successCount = results.filter((item) => item.status === 'SUCCESS').length
+    const failedCount = results.filter((item) => item.status === 'FAILED').length
+    const skippedCount = results.filter((item) => item.status === 'SKIPPED').length
+    const progress = totalCount > 0 ? 100 : 0
+    return {
+      totalCount,
+      successCount,
+      failedCount,
+      skippedCount,
+      progress,
+      results
+    }
+  }
+
   const src = raw && typeof raw === 'object' ? (raw as Record<string, any>) : {}
   const resultListRaw = Array.isArray(src.results)
     ? src.results
