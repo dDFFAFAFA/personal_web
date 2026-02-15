@@ -75,20 +75,23 @@ public class RepoSyncService {
         return toConfigResponse(saved);
     }
 
+    @Transactional(noRollbackFor = BusinessException.class)
     public RepoSyncStatusResponse sync() {
         RepoConfig config = repoConfigRepository.findById(CONFIG_ID)
-                .orElseThrow(() -> new BusinessException(400, "仓库配置不存在，请先保存配置"));
-        ensureConfigReady(config);
+                .orElseThrow(() -> new BusinessException(404, "仓库配置不存在，请先保存配置"));
 
-        Path keyPath = Paths.get(sshPrivateKeyPath);
-        if (!Files.exists(keyPath)) {
-            throw new BusinessException(400, "SSH 私钥文件不存在，请先在服务器部署私钥");
-        }
-
-        Path targetPath = resolveTargetPath(config.getTargetDir());
-        RepoSyncMode mode;
-        CommandResult result;
+        long startedAt = System.nanoTime();
+        RepoSyncMode mode = null;
         try {
+            ensureConfigReady(config);
+
+            Path keyPath = Paths.get(sshPrivateKeyPath);
+            if (!Files.exists(keyPath)) {
+                throw new BusinessException(400, "SSH 私钥文件不存在，请先在服务器部署私钥");
+            }
+
+            Path targetPath = resolveTargetPath(config.getTargetDir());
+            CommandResult result;
             if (Files.exists(targetPath.resolve(".git"))) {
                 mode = RepoSyncMode.PULL;
                 result = runGitCommand(List.of(
@@ -101,29 +104,34 @@ public class RepoSyncService {
                         "git", "clone", "--branch", config.getBranchName(), config.getRepoUrl(), targetPath.toString()
                 ));
             }
+
+            if (result.exitCode == 0) {
+                OffsetDateTime now = OffsetDateTime.now();
+                long durationMs = elapsedDurationMs(startedAt);
+                String msg = "同步成功";
+                updateSyncResult(config, RepoSyncStatus.SUCCESS, mode, msg, now, null, durationMs);
+                log.info("Repo sync success mode={} target={} durationMs={}", mode, targetPath, durationMs);
+                return RepoSyncStatusResponse.builder()
+                        .status(RepoSyncStatus.SUCCESS)
+                        .mode(mode)
+                        .message(msg)
+                        .syncedAt(now)
+                        .durationMs(durationMs)
+                        .build();
+            }
+
+            throw new BusinessException(500, "同步失败: " + trimMessage(result.output));
         } catch (IOException ex) {
             log.error("Repo sync process execution failed", ex);
-            updateSyncResult(config, RepoSyncStatus.FAILED, null, "执行 git 命令失败", OffsetDateTime.now());
             throw new BusinessException(500, "执行 git 命令失败");
+        } catch (BusinessException ex) {
+            OffsetDateTime now = OffsetDateTime.now();
+            long durationMs = elapsedDurationMs(startedAt);
+            updateSyncResult(config, RepoSyncStatus.FAILED, mode, ex.getMessage(), now, ex.getCode(), durationMs);
+            log.warn("Repo sync failed mode={} code={} durationMs={} message={}",
+                    mode, ex.getCode(), durationMs, ex.getMessage());
+            throw ex;
         }
-
-        OffsetDateTime now = OffsetDateTime.now();
-        if (result.exitCode == 0) {
-            String msg = "同步成功";
-            updateSyncResult(config, RepoSyncStatus.SUCCESS, mode, msg, now);
-            log.info("Repo sync success mode={} target={}", mode, targetPath);
-            return RepoSyncStatusResponse.builder()
-                    .status(RepoSyncStatus.SUCCESS)
-                    .mode(mode)
-                    .message(msg)
-                    .syncedAt(now)
-                    .build();
-        }
-
-        String error = "同步失败: " + trimMessage(result.output);
-        updateSyncResult(config, RepoSyncStatus.FAILED, mode, error, now);
-        log.warn("Repo sync failed mode={} exitCode={} output={}", mode, result.exitCode, result.output);
-        throw new BusinessException(500, error);
     }
 
     @Transactional(readOnly = true)
@@ -141,6 +149,8 @@ public class RepoSyncService {
                 .mode(config.getLastSyncMode())
                 .message(config.getLastSyncMessage())
                 .syncedAt(config.getLastSyncAt())
+                .errorCode(config.getLastSyncErrorCode())
+                .durationMs(config.getLastSyncDurationMs())
                 .build();
     }
 
@@ -216,11 +226,15 @@ public class RepoSyncService {
                                   RepoSyncStatus status,
                                   RepoSyncMode mode,
                                   String message,
-                                  OffsetDateTime syncedAt) {
+                                  OffsetDateTime syncedAt,
+                                  Integer errorCode,
+                                  Long durationMs) {
         config.setLastSyncStatus(status);
         config.setLastSyncMode(mode);
         config.setLastSyncMessage(trimMessage(message));
         config.setLastSyncAt(syncedAt);
+        config.setLastSyncErrorCode(errorCode);
+        config.setLastSyncDurationMs(durationMs);
         repoConfigRepository.save(config);
     }
 
@@ -267,6 +281,10 @@ public class RepoSyncService {
         }
         String value = message.trim();
         return value.length() > 1000 ? value.substring(0, 1000) : value;
+    }
+
+    private long elapsedDurationMs(long startedAtNanos) {
+        return TimeUnit.NANOSECONDS.toMillis(Math.max(0L, System.nanoTime() - startedAtNanos));
     }
 
     private record CommandResult(int exitCode, String output) {

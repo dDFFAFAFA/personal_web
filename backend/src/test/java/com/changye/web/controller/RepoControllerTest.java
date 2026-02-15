@@ -87,11 +87,31 @@ class RepoControllerTest {
                 .mode(RepoSyncMode.CLONE)
                 .message("同步成功")
                 .syncedAt(OffsetDateTime.now())
+                .durationMs(120L)
                 .build();
         when(repoSyncService.sync()).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/repo/sync"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("SUCCESS"));
+    }
+
+    @Test
+    void syncStatusReturnsErrorMetadata() throws Exception {
+        RepoSyncStatusResponse response = RepoSyncStatusResponse.builder()
+                .status(RepoSyncStatus.FAILED)
+                .mode(RepoSyncMode.PULL)
+                .message("同步失败")
+                .errorCode(500)
+                .durationMs(321L)
+                .syncedAt(OffsetDateTime.now())
+                .build();
+        when(repoSyncService.getSyncStatus()).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/repo/sync-status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("FAILED"))
+                .andExpect(jsonPath("$.data.errorCode").value(500))
+                .andExpect(jsonPath("$.data.durationMs").value(321));
     }
 }
