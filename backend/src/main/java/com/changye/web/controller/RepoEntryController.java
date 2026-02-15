@@ -4,6 +4,8 @@ import com.changye.web.common.ApiResponse;
 import com.changye.web.dto.request.PaperCodeEntryRequest;
 import com.changye.web.dto.response.PaperCodeEntryResponse;
 import com.changye.web.service.PaperCodeEntryService;
+import com.changye.web.service.RepoEntrySyncResult;
+import com.changye.web.service.RepoEntrySyncService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class RepoEntryController {
 
     private final PaperCodeEntryService paperCodeEntryService;
+    private final RepoEntrySyncService repoEntrySyncService;
 
-    public RepoEntryController(PaperCodeEntryService paperCodeEntryService) {
+    public RepoEntryController(PaperCodeEntryService paperCodeEntryService,
+                               RepoEntrySyncService repoEntrySyncService) {
         this.paperCodeEntryService = paperCodeEntryService;
+        this.repoEntrySyncService = repoEntrySyncService;
     }
 
     @GetMapping("/code-entries")
@@ -51,6 +56,14 @@ public class RepoEntryController {
     public ResponseEntity<ApiResponse<Void>> deleteEntry(@PathVariable Long id) {
         paperCodeEntryService.deleteEntry(id);
         return ResponseEntity.ok(ApiResponse.success("删除成功", null));
+    }
+
+    @PostMapping("/entries/sync")
+    public ResponseEntity<ApiResponse<List<RepoEntrySyncResult>>> syncEntries(
+            @RequestBody(required = false) RepoEntriesSyncRequest request) {
+        Long paperId = request == null ? null : request.getPaperId();
+        List<Long> entryIds = request == null ? null : request.getEntryIds();
+        return ResponseEntity.ok(ApiResponse.success(repoEntrySyncService.syncEntries(paperId, entryIds)));
     }
 
     @PostMapping("/readme/rebuild")
