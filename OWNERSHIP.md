@@ -112,3 +112,16 @@
 
 - 线程执行标准和交付格式统一见：`docs/AGENT_RUNBOOK.md`
 - 任务分配和文件锁登记统一见：`docs/PHASE{N}_TASK_BOARD.md`（当前 Phase4 使用 `docs/PHASE4_TASK_BOARD.md`）
+
+---
+
+## P4-REPO-SUBSYNC-02 文档协同例外
+
+为完成仓库同步稳定性协同任务，允许 `BE-Thread-A` 在本任务内修改以下文档：
+- `CONTRACT.md`（仅补充 repo-sync 契约条款）
+- `OWNERSHIP.md`（仅登记本例外条款）
+- `docs/REPO_SYNC_ERROR_CODES.md`（错误码、持久化与回滚说明）
+
+限制：
+- 不得修改前端 ownership 定义。
+- 不得删除既有所有权规则，仅可追加任务级说明。
