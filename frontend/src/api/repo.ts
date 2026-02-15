@@ -5,7 +5,9 @@ import type {
   RepoConfigUpdateRequest,
   RepoSyncStatusResponse,
   PaperCodeEntry,
-  PaperCodeEntryPayload
+  PaperCodeEntryPayload,
+  PaperCodeSyncRequest,
+  PaperCodeSyncResponse
 } from '../types/repo'
 
 export const getRepoConfig = () =>
@@ -19,6 +21,9 @@ export const syncRepo = () =>
 
 export const getRepoSyncStatus = () =>
   request.get<any, ApiResponse<RepoSyncStatusResponse>>('/repo/sync-status')
+
+export const syncPaperCodeToRepo = (payload: PaperCodeSyncRequest = {}) =>
+  request.post<any, ApiResponse<PaperCodeSyncResponse>>('/repo/code-entries/sync', payload)
 
 export const listCodeEntries = (paperId?: number) =>
   request.get<any, ApiResponse<PaperCodeEntry[]>>('/repo/code-entries', {

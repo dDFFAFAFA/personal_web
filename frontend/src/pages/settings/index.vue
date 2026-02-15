@@ -45,6 +45,7 @@
         <el-form-item>
           <el-button type="primary" :loading="repoSaving" @click="handleSaveRepo">保存配置</el-button>
           <el-button :loading="syncing" :disabled="syncDisabled" @click="handleSync">同步仓库（Clone/Pull）</el-button>
+          <el-button :loading="paperCodeSyncing" :disabled="paperCodeSyncDisabled" @click="handleSyncPaperCode">同步论文代码到 paper-code</el-button>
           <el-button :loading="readmeRebuilding" :disabled="readmeDisabled" @click="handleRebuildReadme">重建 README</el-button>
           <el-button :loading="syncStatusLoading" :disabled="refreshStatusDisabled" @click="refreshSyncStatus">刷新状态</el-button>
         </el-form-item>
@@ -67,6 +68,32 @@
         <div class="status-line">模式：{{ syncStatus.mode || '-' }}</div>
         <div class="status-line">时间：{{ formatTime(syncStatus.syncedAt) }}</div>
         <div class="status-line" v-if="syncStatus.message">信息：{{ syncStatus.message }}</div>
+      </div>
+
+      <div class="sync-status paper-code-sync">
+        <div class="status-title">论文代码同步到 paper-code</div>
+        <el-tag :type="paperCodeSyncTagType" size="small">{{ paperCodeSyncTagLabel }}</el-tag>
+        <el-progress :percentage="paperCodeSyncProgress" :status="paperCodeSyncTagType === 'danger' ? 'exception' : undefined" />
+        <div class="status-line">{{ paperCodeSyncSummaryText }}</div>
+        <div class="status-line" v-if="paperCodeSyncResult?.message">信息：{{ paperCodeSyncResult?.message }}</div>
+        <div class="status-line error-line" v-if="paperCodeSyncError">错误：{{ paperCodeSyncError }}</div>
+
+        <el-empty
+          v-if="!paperCodeSyncing && (!paperCodeSyncResult?.results || paperCodeSyncResult.results.length === 0)"
+          description="暂无逐条结果"
+          :image-size="72"
+        />
+
+        <el-table v-else-if="paperCodeSyncResult?.results?.length" :data="paperCodeSyncResult.results" size="small" border class="paper-sync-table">
+          <el-table-column prop="paperTitle" label="论文" min-width="220" />
+          <el-table-column prop="repoUrl" label="仓库地址" min-width="280" />
+          <el-table-column label="状态" width="110">
+            <template #default="scope">
+              <el-tag size="small" :type="getSyncItemStatusType(scope.row.status)">{{ getSyncItemStatusLabel(scope.row.status) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="message" label="结果信息" min-width="220" />
+        </el-table>
       </div>
     </el-card>
 
@@ -182,6 +209,7 @@ import {
   getRepoSyncStatus,
   listCodeEntries,
   rebuildRepoReadme,
+  syncPaperCodeToRepo,
   syncRepo,
   updateCodeEntry,
   updateRepoConfig
@@ -194,7 +222,9 @@ import type {
   RepoConfig,
   RepoProvider,
   RepoConfigUpdateRequest,
-  RepoSyncStatusResponse
+  RepoSyncStatusResponse,
+  PaperCodeSyncItemResult,
+  PaperCodeSyncResponse
 } from '../../types/repo'
 import type { AiProviderConfig } from '../../types/ai'
 
@@ -210,6 +240,9 @@ const repoSaving = ref(false)
 const syncing = ref(false)
 const readmeRebuilding = ref(false)
 const syncStatusLoading = ref(false)
+const paperCodeSyncing = ref(false)
+const paperCodeSyncError = ref('')
+const paperCodeSyncResult = ref<PaperCodeSyncResponse | null>(null)
 const entrySaving = ref(false)
 const entryDialogVisible = ref(false)
 const editingEntryId = ref<number | null>(null)
@@ -261,19 +294,133 @@ const syncStatusType = computed(() => {
 const repoActionHint = computed(() => {
   if (repoSaving.value) return '配置保存中，完成后可继续操作。'
   if (syncing.value) return '仓库同步进行中，请等待完成。'
+  if (paperCodeSyncing.value) return '论文代码同步进行中，请等待完成。'
   if (readmeRebuilding.value) return 'README 重建进行中，请稍候。'
   if (!repoForm.configured) return '请先保存并启用仓库配置，再执行同步或重建。'
   return ''
 })
 
 const syncDisabled = computed(() => Boolean(repoActionHint.value) || syncStatusLoading.value)
+const paperCodeSyncDisabled = computed(() => Boolean(repoActionHint.value) || syncStatusLoading.value)
 const readmeDisabled = computed(() => Boolean(repoActionHint.value) || syncStatusLoading.value)
-const refreshStatusDisabled = computed(() => syncing.value || readmeRebuilding.value || syncStatusLoading.value)
+const refreshStatusDisabled = computed(() => syncing.value || paperCodeSyncing.value || readmeRebuilding.value || syncStatusLoading.value)
 
 const getErrorMessage = (error: unknown, fallback: string) => {
   const apiMsg = (error as any)?.response?.data?.message
   const msg = (typeof apiMsg === 'string' && apiMsg.trim()) || (error as any)?.message
   return typeof msg === 'string' && msg.trim() ? msg.trim() : fallback
+}
+
+const normalizeNumber = (value: unknown, fallback = 0) => {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : fallback
+}
+
+const normalizeSyncItem = (raw: unknown): PaperCodeSyncItemResult | null => {
+  if (!raw || typeof raw !== 'object') return null
+  const src = raw as Record<string, any>
+  const status = typeof src.status === 'string' ? src.status.toUpperCase() : undefined
+  return {
+    paperId: normalizeNumber(src.paperId ?? src.paper_id, 0) || undefined,
+    paperTitle: src.paperTitle ?? src.paper_title,
+    repoUrl: src.repoUrl ?? src.repo_url,
+    status,
+    message: typeof src.message === 'string' ? src.message : undefined,
+    syncedAt: src.syncedAt ?? src.synced_at
+  }
+}
+
+const normalizePaperCodeSyncResult = (raw: unknown): PaperCodeSyncResponse => {
+  const src = raw && typeof raw === 'object' ? (raw as Record<string, any>) : {}
+  const resultListRaw = Array.isArray(src.results)
+    ? src.results
+    : Array.isArray(src.items)
+      ? src.items
+      : Array.isArray(src.details)
+        ? src.details
+        : []
+  const results = resultListRaw
+    .map(normalizeSyncItem)
+    .filter((item): item is PaperCodeSyncItemResult => Boolean(item))
+
+  const totalCount = normalizeNumber(src.totalCount ?? src.total ?? results.length, results.length)
+  const successCount = normalizeNumber(
+    src.successCount ?? src.success ?? results.filter((item) => item.status === 'SUCCESS').length,
+    0
+  )
+  const failedCount = normalizeNumber(
+    src.failedCount ?? src.failed ?? results.filter((item) => item.status === 'FAILED').length,
+    0
+  )
+  const skippedCount = normalizeNumber(
+    src.skippedCount ?? src.skipped ?? results.filter((item) => item.status === 'SKIPPED').length,
+    0
+  )
+
+  const computedProgress = totalCount > 0
+    ? Math.round(((successCount + failedCount + skippedCount) / totalCount) * 100)
+    : 0
+
+  const progress = normalizeNumber(src.progress, computedProgress)
+
+  return {
+    taskId: src.taskId ?? src.task_id,
+    status: typeof src.status === 'string' ? src.status : undefined,
+    message: typeof src.message === 'string' ? src.message : undefined,
+    totalCount,
+    successCount,
+    failedCount,
+    skippedCount,
+    startedAt: src.startedAt ?? src.started_at,
+    finishedAt: src.finishedAt ?? src.finished_at,
+    progress: Math.max(0, Math.min(100, progress)),
+    results
+  }
+}
+
+const paperCodeSyncProgress = computed(() => {
+  if (!paperCodeSyncResult.value) return paperCodeSyncing.value ? 10 : 0
+  return Math.max(0, Math.min(100, normalizeNumber(paperCodeSyncResult.value.progress)))
+})
+
+const paperCodeSyncTagType = computed(() => {
+  if (paperCodeSyncing.value) return 'warning'
+  if (!paperCodeSyncResult.value) return 'info'
+  if ((paperCodeSyncResult.value.failedCount || 0) > 0) return 'danger'
+  if ((paperCodeSyncResult.value.totalCount || 0) > 0) return 'success'
+  return 'info'
+})
+
+const paperCodeSyncTagLabel = computed(() => {
+  if (paperCodeSyncing.value) return '同步中'
+  if (!paperCodeSyncResult.value) return '未开始'
+  if ((paperCodeSyncResult.value.failedCount || 0) > 0) return '部分失败'
+  if ((paperCodeSyncResult.value.totalCount || 0) <= 0) return '无数据'
+  return '完成'
+})
+
+const paperCodeSyncSummaryText = computed(() => {
+  if (!paperCodeSyncResult.value) return '尚未执行论文代码同步。'
+  const total = paperCodeSyncResult.value.totalCount || 0
+  const success = paperCodeSyncResult.value.successCount || 0
+  const failed = paperCodeSyncResult.value.failedCount || 0
+  const skipped = paperCodeSyncResult.value.skippedCount || 0
+  return '总计 ' + total + ' 条，成功 ' + success + ' 条，失败 ' + failed + ' 条，跳过 ' + skipped + ' 条。'
+})
+
+const getSyncItemStatusType = (status?: string) => {
+  if (status === 'SUCCESS') return 'success'
+  if (status === 'FAILED') return 'danger'
+  if (status === 'SKIPPED') return 'warning'
+  return 'info'
+}
+
+const getSyncItemStatusLabel = (status?: string) => {
+  if (status === 'SUCCESS') return '成功'
+  if (status === 'FAILED') return '失败'
+  if (status === 'SKIPPED') return '跳过'
+  if (status === 'PENDING') return '处理中'
+  return status || '-'
 }
 
 const normalizeText = (value?: string) => (value || '').trim()
@@ -490,6 +637,41 @@ const handleRebuildReadme = async () => {
   }
 }
 
+const handleSyncPaperCode = async () => {
+  if (paperCodeSyncDisabled.value) {
+    ElMessage.warning(repoActionHint.value || '当前不可执行论文代码同步')
+    return
+  }
+
+  paperCodeSyncing.value = true
+  paperCodeSyncError.value = ''
+  setRepoFeedback('info', '论文代码同步中', '正在同步论文代码条目到 paper-code 仓库。')
+
+  try {
+    const res = await syncPaperCodeToRepo()
+    if (res.code === 200) {
+      paperCodeSyncResult.value = normalizePaperCodeSyncResult(res.data)
+      const failed = paperCodeSyncResult.value.failedCount || 0
+      const summaryMessage = paperCodeSyncResult.value.message || paperCodeSyncSummaryText.value
+      if (failed > 0) {
+        ElMessage.warning(summaryMessage)
+        setRepoFeedback('warning', '论文代码同步完成（含失败）', summaryMessage)
+      } else {
+        ElMessage.success(summaryMessage)
+        setRepoFeedback('success', '论文代码同步完成', summaryMessage)
+      }
+      await reloadCodeEntries()
+    }
+  } catch (error) {
+    const message = getErrorMessage(error, '同步论文代码失败，请检查仓库配置后重试')
+    paperCodeSyncError.value = message
+    ElMessage.error(message)
+    setRepoFeedback('error', '论文代码同步失败', message)
+  } finally {
+    paperCodeSyncing.value = false
+  }
+}
+
 const refreshSyncStatus = async (silent = false) => {
   syncStatusLoading.value = true
   try {
@@ -656,6 +838,20 @@ onMounted(loadAll)
 .status-line {
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.paper-code-sync {
+  margin-top: 12px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.paper-sync-table {
+  margin-top: 8px;
+}
+
+.error-line {
+  color: #f56c6c;
 }
 
 .invalid-link-text {

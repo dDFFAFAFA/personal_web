@@ -29,6 +29,35 @@ export interface RepoSyncStatusResponse {
   syncedAt?: string
 }
 
+export type PaperCodeSyncItemStatus = 'SUCCESS' | 'FAILED' | 'SKIPPED' | 'PENDING' | string
+
+export interface PaperCodeSyncRequest {
+  paperId?: number
+}
+
+export interface PaperCodeSyncItemResult {
+  paperId?: number
+  paperTitle?: string
+  repoUrl?: string
+  status?: PaperCodeSyncItemStatus
+  message?: string
+  syncedAt?: string
+}
+
+export interface PaperCodeSyncResponse {
+  taskId?: string
+  status?: string
+  message?: string
+  totalCount?: number
+  successCount?: number
+  failedCount?: number
+  skippedCount?: number
+  startedAt?: string
+  finishedAt?: string
+  progress?: number
+  results?: PaperCodeSyncItemResult[]
+}
+
 export interface PaperCodeEntry {
   id: number
   paperId: number
