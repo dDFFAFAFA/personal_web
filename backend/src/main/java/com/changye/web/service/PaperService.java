@@ -5,6 +5,7 @@ import com.changye.web.dto.request.PaperCreateRequest;
 import com.changye.web.dto.request.PaperUpdateRequest;
 import com.changye.web.dto.request.StarUpdateRequest;
 import com.changye.web.dto.request.StatusUpdateRequest;
+import com.changye.web.dto.response.MetadataEnrichResponse;
 import com.changye.web.dto.response.PaperResponse;
 import com.changye.web.dto.response.TagResponse;
 import com.changye.web.dto.response.VenueRankingResponse;
@@ -55,6 +56,7 @@ public class PaperService {
     private final TagRepository tagRepository;
     private final ObjectMapper objectMapper;
     private final VenueRankingService venueRankingService;
+    private final MetadataService metadataService;
 
     @Value("${app.upload.path}")
     private String uploadPath;
@@ -63,12 +65,14 @@ public class PaperService {
                         NoteRepository noteRepository,
                         TagRepository tagRepository,
                         ObjectMapper objectMapper,
-                        VenueRankingService venueRankingService) {
+                        VenueRankingService venueRankingService,
+                        MetadataService metadataService) {
         this.paperRepository = paperRepository;
         this.noteRepository = noteRepository;
         this.tagRepository = tagRepository;
         this.objectMapper = objectMapper;
         this.venueRankingService = venueRankingService;
+        this.metadataService = metadataService;
     }
 
     @Transactional(readOnly = true)
@@ -114,6 +118,7 @@ public class PaperService {
         Paper saved = paperRepository.save(paper);
         storeFile(saved, file);
         Paper updated = paperRepository.save(saved);
+        updated = enrichUploadedPaperIfNeeded(updated);
         log.info("Created paper id={} title={}", updated.getId(), updated.getTitle());
         return toPaperResponse(updated, false, 0);
     }
@@ -356,6 +361,49 @@ public class PaperService {
         paper.setCcfRank(ranking.getCcfRank());
         paper.setJcrQuartile(ranking.getJcrQuartile());
         paper.setImpactFactor(ranking.getImpactFactor());
+    }
+
+    private Paper enrichUploadedPaperIfNeeded(Paper paper) {
+        if (!shouldAutoEnrich(paper)) {
+            return paper;
+        }
+        try {
+            MetadataEnrichResponse response = metadataService.enrichAndApply(paper.getId());
+            if (hasEnrichedPayload(response)) {
+                return paperRepository.findById(paper.getId()).orElse(paper);
+            }
+        } catch (RuntimeException ex) {
+            // Metadata API is best-effort; upload should not fail when upstream service is unavailable.
+            log.warn("Metadata auto-enrich skipped for paper id={}: {}", paper.getId(), ex.getMessage());
+        }
+        return paper;
+    }
+
+    private boolean shouldAutoEnrich(Paper paper) {
+        if (!StringUtils.hasText(paper.getTitle())) {
+            return false;
+        }
+        if (StringUtils.hasText(paper.getDoi())) {
+            return true;
+        }
+        return paper.getYear() == null
+                || !StringUtils.hasText(paper.getVenue())
+                || !StringUtils.hasText(paper.getAbstractText())
+                || readAuthors(paper.getAuthors()).isEmpty();
+    }
+
+    private boolean hasEnrichedPayload(MetadataEnrichResponse response) {
+        if (response == null) {
+            return false;
+        }
+        return StringUtils.hasText(response.getTitle())
+                || (response.getAuthors() != null && !response.getAuthors().isEmpty())
+                || response.getYear() != null
+                || StringUtils.hasText(response.getVenue())
+                || StringUtils.hasText(response.getDoi())
+                || StringUtils.hasText(response.getAbstractText())
+                || StringUtils.hasText(response.getCcfRank())
+                || StringUtils.hasText(response.getJcrQuartile());
     }
 
     private PaperResponse toPaperResponse(Paper paper, boolean includeNotes, int noteCount) {

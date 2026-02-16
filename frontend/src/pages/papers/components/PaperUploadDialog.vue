@@ -103,7 +103,8 @@ import { ref, reactive, computed } from 'vue'
 import { UploadFilled, MagicStick } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type UploadFile } from 'element-plus'
 import { createPaper } from '../../../api/paper'
-import { enrichByDoi, enrichByTitle } from '../../../api/metadata'
+import { enrichByDoi, enrichByFile, enrichByTitle, lookupVenue } from '../../../api/metadata'
+import type { MetadataEnrichResponse } from '../../../types/paper'
 
 const props = defineProps<{
   modelValue: boolean
@@ -161,32 +162,108 @@ const handleDoiClear = () => {
 const handleSmartFill = async () => {
   enrichLoading.value = true
   try {
-    let res
+    let data: MetadataEnrichResponse | null = null
     if (form.doi) {
-      res = await enrichByDoi(form.doi)
+      const res = await enrichByDoi(form.doi)
+      data = res.data
+      if (isMetadataEmpty(data) && form.title) {
+        const fallback = await enrichByTitle(form.title)
+        data = fallback.data
+      }
+    } else if (fileList.value[0]?.raw) {
+      const file = fileList.value[0].raw as File
+      const fileRes = await enrichByFile(file, form.title)
+      data = fileRes.data
+      if (!hasSubstantialMetadata(data) && form.title) {
+        const titleRes = await enrichByTitle(form.title)
+        data = mergeMetadata(data, titleRes.data)
+      }
     } else if (form.title) {
-      res = await enrichByTitle(form.title)
+      const res = await enrichByTitle(form.title)
+      data = res.data
     } else {
       ElMessage.warning('请填写 DOI 或标题以进行自动填充')
       return
     }
 
-    if (res && res.code === 200) {
-      const data = res.data
-      form.title = data.title || form.title
-      form.authorsStr = data.authors ? data.authors.join(', ') : form.authorsStr
-      form.year = data.year || form.year
-      form.venue = data.venue || form.venue
-      form.doi = data.doi || form.doi
-      form.abstractText = data.abstractText || form.abstractText
-      form.ccfRank = data.ccfRank || form.ccfRank
-      form.jcrQuartile = data.jcrQuartile || form.jcrQuartile
+    if (!data || isMetadataEmpty(data)) {
+      ElMessage.warning('未检索到可用元数据，请换 DOI 或手动输入标题后重试')
+      return
+    }
+
+    form.title = data.title || form.title
+    form.authorsStr = data.authors ? data.authors.join(', ') : form.authorsStr
+    form.year = data.year || form.year
+    form.venue = data.venue || form.venue
+    form.doi = data.doi || form.doi
+    form.abstractText = data.abstractText || form.abstractText
+    form.ccfRank = data.ccfRank || form.ccfRank
+    form.jcrQuartile = data.jcrQuartile || form.jcrQuartile
+
+    if (form.venue && !form.ccfRank && !form.jcrQuartile) {
+      try {
+        const venueRes = await lookupVenue(form.venue)
+        if (venueRes.data) {
+          form.ccfRank = venueRes.data.ccfRank || form.ccfRank
+          form.jcrQuartile = venueRes.data.jcrQuartile || form.jcrQuartile
+        }
+      } catch (_e) {
+        // Ignore ranking lookup failures, it should not block basic metadata fill.
+      }
+    }
+    if (hasSubstantialMetadata(data)) {
       ElMessage.success('元数据填充成功')
+    } else {
+      ElMessage.warning('仅识别到标题，未检索到作者/年份/刊物等信息')
     }
   } catch (error) {
     console.error(error)
   } finally {
     enrichLoading.value = false
+  }
+}
+
+const isMetadataEmpty = (data?: MetadataEnrichResponse | null) => {
+  if (!data) return true
+  return !data.title
+    && (!data.authors || data.authors.length === 0)
+    && !data.year
+    && !data.venue
+    && !data.doi
+    && !data.abstractText
+}
+
+const hasSubstantialMetadata = (data?: MetadataEnrichResponse | null) => {
+  if (!data) return false
+  return !!(
+    (data.authors && data.authors.length > 0)
+    || data.year
+    || data.venue
+    || data.doi
+    || data.abstractText
+    || data.ccfRank
+    || data.jcrQuartile
+  )
+}
+
+const mergeMetadata = (
+  primary: MetadataEnrichResponse | null,
+  secondary: MetadataEnrichResponse | null
+): MetadataEnrichResponse | null => {
+  if (!primary) return secondary
+  if (!secondary) return primary
+  return {
+    title: primary.title || secondary.title,
+    authors: (primary.authors && primary.authors.length > 0) ? primary.authors : secondary.authors,
+    year: primary.year ?? secondary.year,
+    venue: primary.venue || secondary.venue,
+    doi: primary.doi || secondary.doi,
+    abstractText: primary.abstractText || secondary.abstractText,
+    paperUrl: primary.paperUrl || secondary.paperUrl,
+    citationCount: primary.citationCount ?? secondary.citationCount,
+    ccfRank: primary.ccfRank || secondary.ccfRank,
+    jcrQuartile: primary.jcrQuartile || secondary.jcrQuartile,
+    source: primary.source || secondary.source
   }
 }
 

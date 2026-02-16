@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -52,6 +55,14 @@ public class MetadataController {
     public ResponseEntity<ApiResponse<MetadataEnrichResponse>> enrichByTitle(
             @Valid @RequestBody TitleRequest request) {
         MetadataEnrichResponse response = metadataService.enrichByTitle(request.getTitle());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping(value = "/papers/enrich/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<MetadataEnrichResponse>> enrichByFile(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(value = "fallbackTitle", required = false) String fallbackTitle) {
+        MetadataEnrichResponse response = metadataService.enrichByFile(file, fallbackTitle);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

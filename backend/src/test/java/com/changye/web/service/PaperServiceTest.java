@@ -1,6 +1,7 @@
 package com.changye.web.service;
 
 import com.changye.web.dto.request.PaperCreateRequest;
+import com.changye.web.dto.response.MetadataEnrichResponse;
 import com.changye.web.dto.response.PaperResponse;
 import com.changye.web.model.Paper;
 import com.changye.web.model.enums.ReadingStatus;
@@ -31,6 +32,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +52,9 @@ class PaperServiceTest {
     @Mock
     private VenueRankingService venueRankingService;
 
+    @Mock
+    private MetadataService metadataService;
+
     private PaperService paperService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -57,7 +64,14 @@ class PaperServiceTest {
 
     @BeforeEach
     void setUp() {
-        paperService = new PaperService(paperRepository, noteRepository, tagRepository, objectMapper, venueRankingService);
+        paperService = new PaperService(
+                paperRepository,
+                noteRepository,
+                tagRepository,
+                objectMapper,
+                venueRankingService,
+                metadataService
+        );
         ReflectionTestUtils.setField(paperService, "uploadPath", tempDir.toString());
     }
 
@@ -97,6 +111,10 @@ class PaperServiceTest {
             savedPaperRef.set(saved);
             return saved;
         });
+        when(metadataService.enrichAndApply(1L)).thenReturn(MetadataEnrichResponse.builder()
+                .year(2024)
+                .venue("NeurIPS")
+                .build());
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "paper.pdf",
@@ -114,5 +132,34 @@ class PaperServiceTest {
         assertThat(response.getFileName()).isEqualTo("paper.pdf");
         assertThat(response.getFileSize()).isEqualTo(file.getSize());
         assertThat(savedPaperRef.get().getFileStorageKey()).isEqualTo("1_paper.pdf");
+        verify(metadataService).enrichAndApply(eq(1L));
+    }
+
+    @Test
+    void createPaperSkipsAutoEnrichWhenMetadataAlreadyCompleteWithoutDoi() {
+        when(paperRepository.save(any(Paper.class))).thenAnswer(invocation -> {
+            Paper saved = invocation.getArgument(0);
+            if (saved.getId() == null) {
+                saved.setId(2L);
+            }
+            return saved;
+        });
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "paper.pdf",
+                "application/pdf",
+                "dummy".getBytes()
+        );
+
+        PaperCreateRequest request = new PaperCreateRequest();
+        request.setTitle("Title");
+        request.setAuthors(List.of("Alice", "Bob"));
+        request.setYear(2024);
+        request.setVenue("NeurIPS");
+        request.setAbstractText("Summary");
+
+        paperService.createPaper(file, request);
+
+        verify(metadataService, never()).enrichAndApply(any(Long.class));
     }
 }

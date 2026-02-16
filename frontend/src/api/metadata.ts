@@ -8,6 +8,17 @@ export const enrichByDoi = (doi: string) =>
 export const enrichByTitle = (title: string) =>
   request.post<any, ApiResponse<MetadataEnrichResponse>>('/papers/enrich/title', { title })
 
+export const enrichByFile = (file: File, fallbackTitle?: string) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  if (fallbackTitle) {
+    formData.append('fallbackTitle', fallbackTitle)
+  }
+  return request.post<any, ApiResponse<MetadataEnrichResponse>>('/papers/enrich/file', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+
 export const enrichPaper = (paperId: number) =>
   request.post<any, ApiResponse<Paper>>(`/papers/${paperId}/enrich`)
 

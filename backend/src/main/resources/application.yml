@@ -30,6 +30,8 @@ spring:
 app:
   upload:
     path: ${storage.local.base-path:./uploads/papers}
+  metadata:
+    semantic-scholar-api-key: ${SEMANTIC_SCHOLAR_API_KEY:}
 
 storage:
   mode: ${STORAGE_MODE:local_only}

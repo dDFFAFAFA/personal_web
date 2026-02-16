@@ -11,11 +11,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -26,6 +31,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -39,11 +45,16 @@ public class MetadataService {
     private final ObjectMapper objectMapper;
     private final VenueRankingService venueRankingService;
     private final PaperRepository paperRepository;
+    private final PdfMetadataExtractorService pdfMetadataExtractorService;
+
+    @Value("${app.metadata.semantic-scholar-api-key:}")
+    private String semanticScholarApiKey;
 
     public MetadataService(RestTemplateBuilder restTemplateBuilder,
                            ObjectMapper objectMapper,
                            VenueRankingService venueRankingService,
-                           PaperRepository paperRepository) {
+                           PaperRepository paperRepository,
+                           PdfMetadataExtractorService pdfMetadataExtractorService) {
         this.restTemplate = restTemplateBuilder
                 .setConnectTimeout(TIMEOUT)
                 .setReadTimeout(TIMEOUT)
@@ -51,16 +62,24 @@ public class MetadataService {
         this.objectMapper = objectMapper;
         this.venueRankingService = venueRankingService;
         this.paperRepository = paperRepository;
+        this.pdfMetadataExtractorService = pdfMetadataExtractorService;
     }
 
     @Transactional(readOnly = true)
     public MetadataEnrichResponse enrichByDoi(String doi) {
-        if (!StringUtils.hasText(doi)) {
+        String normalizedDoi = normalizeDoi(doi);
+        if (!StringUtils.hasText(normalizedDoi)) {
             return emptyResponse("none");
         }
-        MetadataEnrichResponse response = fetchFromCrossref(doi);
+        MetadataEnrichResponse response = fetchFromCrossref(normalizedDoi);
         if (response == null) {
-            response = fetchFromSemanticByDoi(doi);
+            response = fetchFromSemanticByDoi(normalizedDoi);
+        }
+        if (response == null && isArxivDoi(normalizedDoi)) {
+            response = fetchFromSemanticByArxivId(toArxivId(normalizedDoi));
+        }
+        if (response != null && !StringUtils.hasText(response.getDoi())) {
+            response.setDoi(normalizedDoi);
         }
         return response == null ? emptyResponse("none") : response;
     }
@@ -71,7 +90,41 @@ public class MetadataService {
             return emptyResponse("none");
         }
         MetadataEnrichResponse response = fetchFromSemanticByTitle(title);
+        if (response == null) {
+            response = fetchFromCrossrefByQuery(title, title);
+        }
         return response == null ? emptyResponse("none") : response;
+    }
+
+    @Transactional(readOnly = true)
+    public MetadataEnrichResponse enrichByFile(MultipartFile file, String fallbackTitle) {
+        PdfMetadataExtractorService.ExtractedPdfMetadata extracted = pdfMetadataExtractorService.extract(file);
+        if (StringUtils.hasText(extracted.doi())) {
+            MetadataEnrichResponse byDoi = enrichByDoi(extracted.doi());
+            if (hasSubstantialMetadata(byDoi)) {
+                return byDoi;
+            }
+        }
+
+        String title = StringUtils.hasText(extracted.title()) ? extracted.title() : normalizeFileTitle(fallbackTitle);
+        if (StringUtils.hasText(title)) {
+            MetadataEnrichResponse byTitle = enrichByTitle(title);
+            if (hasSubstantialMetadata(byTitle)) {
+                return byTitle;
+            }
+            if (byTitle != null && !StringUtils.hasText(byTitle.getTitle())) {
+                byTitle.setTitle(title);
+            }
+            if (byTitle != null) {
+                return byTitle;
+            }
+        }
+
+        MetadataEnrichResponse empty = emptyResponse("none");
+        if (StringUtils.hasText(title)) {
+            empty.setTitle(title);
+        }
+        return empty;
     }
 
     public MetadataEnrichResponse enrichAndApply(Long paperId) {
@@ -214,6 +267,56 @@ public class MetadataService {
         return null;
     }
 
+    private MetadataEnrichResponse fetchFromCrossrefByQuery(String query, String expectedTitle) {
+        String url = "https://api.crossref.org/works";
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(
+                        UriComponentsBuilder.fromUriString(url)
+                                .queryParam("query.title", query)
+                                .queryParam("rows", 5)
+                                .build()
+                                .encode()
+                                .toUri(),
+                        HttpMethod.GET,
+                        new HttpEntity<>(buildHeaders()),
+                        String.class
+                );
+                MetadataEnrichResponse parsed = parseCrossrefSearch(response.getBody(), expectedTitle);
+                if (parsed != null) {
+                    return enrichWithVenue(parsed, "crossref");
+                }
+            } catch (RestClientException ex) {
+                log.warn("CrossRef search request failed (attempt {}): {}", attempt, ex.getMessage());
+            }
+        }
+        return null;
+    }
+
+    private MetadataEnrichResponse fetchFromSemanticByArxivId(String arxivId) {
+        if (!StringUtils.hasText(arxivId)) {
+            return null;
+        }
+        String url = "https://api.semanticscholar.org/graph/v1/paper/ARXIV:{arxivId}?fields=title,authors,year,venue,abstract,citationCount,externalIds,url";
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(
+                        UriComponentsBuilder.fromUriString(url).buildAndExpand(arxivId).encode().toUri(),
+                        HttpMethod.GET,
+                        new HttpEntity<>(buildHeaders()),
+                        String.class
+                );
+                MetadataEnrichResponse parsed = parseSemanticPaper(response.getBody());
+                if (parsed != null) {
+                    return enrichWithVenue(parsed, "semantic_scholar");
+                }
+            } catch (RestClientException ex) {
+                log.warn("Semantic Scholar arXiv request failed (attempt {}): {}", attempt, ex.getMessage());
+            }
+        }
+        return null;
+    }
+
     private MetadataEnrichResponse parseCrossref(String body) {
         if (!StringUtils.hasText(body)) {
             return null;
@@ -221,33 +324,67 @@ public class MetadataService {
         try {
             JsonNode root = objectMapper.readTree(body);
             JsonNode message = root.get("message");
-            if (message == null) {
-                return null;
-            }
-            String title = firstArrayValue(message.get("title"));
-            List<String> authors = parseCrossrefAuthors(message.get("author"));
-            Integer year = parseYearFromIssued(message.get("issued"));
-            String venue = firstArrayValue(message.get("container-title"));
-            String abstractText = message.path("abstract").asText(null);
-            String doi = message.path("DOI").asText(null);
-            String url = message.path("URL").asText(null);
-            Integer citationCount = message.has("is-referenced-by-count")
-                    ? message.get("is-referenced-by-count").asInt()
-                    : null;
-            return MetadataEnrichResponse.builder()
-                    .title(title)
-                    .authors(authors)
-                    .year(year)
-                    .venue(venue)
-                    .abstractText(abstractText)
-                    .doi(doi)
-                    .paperUrl(url)
-                    .citationCount(citationCount)
-                    .build();
+            return parseCrossrefMessage(message);
         } catch (JsonProcessingException ex) {
             log.warn("Failed to parse CrossRef response", ex);
             return null;
         }
+    }
+
+    private MetadataEnrichResponse parseCrossrefSearch(String body, String expectedTitle) {
+        if (!StringUtils.hasText(body)) {
+            return null;
+        }
+        try {
+            JsonNode root = objectMapper.readTree(body);
+            JsonNode items = root.path("message").path("items");
+            if (!items.isArray() || items.isEmpty()) {
+                return null;
+            }
+            MetadataEnrichResponse best = null;
+            double bestScore = 0.0;
+            for (JsonNode item : items) {
+                MetadataEnrichResponse candidate = parseCrossrefMessage(item);
+                if (candidate == null) {
+                    continue;
+                }
+                double score = titleSimilarityScore(expectedTitle, candidate.getTitle());
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = candidate;
+                }
+            }
+            return bestScore >= 0.8 ? best : null;
+        } catch (JsonProcessingException ex) {
+            log.warn("Failed to parse CrossRef search response", ex);
+            return null;
+        }
+    }
+
+    private MetadataEnrichResponse parseCrossrefMessage(JsonNode message) {
+        if (message == null || message.isMissingNode()) {
+            return null;
+        }
+        String title = firstArrayValue(message.get("title"));
+        List<String> authors = parseCrossrefAuthors(message.get("author"));
+        Integer year = parseYearFromIssued(message.get("issued"));
+        String venue = firstArrayValue(message.get("container-title"));
+        String abstractText = message.path("abstract").asText(null);
+        String doi = message.path("DOI").asText(null);
+        String url = message.path("URL").asText(null);
+        Integer citationCount = message.has("is-referenced-by-count")
+                ? message.get("is-referenced-by-count").asInt()
+                : null;
+        return MetadataEnrichResponse.builder()
+                .title(title)
+                .authors(authors)
+                .year(year)
+                .venue(venue)
+                .abstractText(abstractText)
+                .doi(doi)
+                .paperUrl(url)
+                .citationCount(citationCount)
+                .build();
     }
 
     private MetadataEnrichResponse parseSemanticSearch(String body) {
@@ -334,10 +471,26 @@ public class MetadataService {
         return MetadataEnrichResponse.builder().source(source).build();
     }
 
+    private boolean hasSubstantialMetadata(MetadataEnrichResponse response) {
+        if (response == null) {
+            return false;
+        }
+        return (response.getAuthors() != null && !response.getAuthors().isEmpty())
+                || response.getYear() != null
+                || StringUtils.hasText(response.getVenue())
+                || StringUtils.hasText(response.getDoi())
+                || StringUtils.hasText(response.getAbstractText())
+                || StringUtils.hasText(response.getCcfRank())
+                || StringUtils.hasText(response.getJcrQuartile());
+    }
+
     private HttpHeaders buildHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.USER_AGENT, USER_AGENT);
         headers.set(HttpHeaders.ACCEPT, "application/json");
+        if (StringUtils.hasText(semanticScholarApiKey)) {
+            headers.set("x-api-key", semanticScholarApiKey);
+        }
         return headers;
     }
 
@@ -393,7 +546,12 @@ public class MetadataService {
         if (first == null || !first.isArray() || first.isEmpty()) {
             return null;
         }
-        return first.get(0).asInt();
+        JsonNode yearNode = first.get(0);
+        if (yearNode == null || !yearNode.canConvertToInt()) {
+            return null;
+        }
+        int year = yearNode.asInt();
+        return year > 0 ? year : null;
     }
 
     private String writeAuthors(List<String> authors) {
@@ -405,5 +563,107 @@ public class MetadataService {
         } catch (JsonProcessingException ex) {
             throw new BusinessException(500, "作者信息序列化失败");
         }
+    }
+
+    private String normalizeDoi(String doi) {
+        if (!StringUtils.hasText(doi)) {
+            return null;
+        }
+        String normalized = doi.trim();
+        normalized = normalized.replaceFirst("(?i)^https?://(dx\\.)?doi\\.org/", "");
+        normalized = normalized.replaceFirst("(?i)^doi:\\s*", "");
+        normalized = normalized.replaceAll("\\s+", "");
+        return normalized;
+    }
+
+    private boolean isArxivDoi(String doi) {
+        if (!StringUtils.hasText(doi)) {
+            return false;
+        }
+        return doi.toLowerCase(Locale.ROOT).startsWith("10.48550/arxiv.");
+    }
+
+    private String toArxivId(String doi) {
+        if (!isArxivDoi(doi)) {
+            return null;
+        }
+        return doi.replaceFirst("(?i)^10\\.48550/arxiv\\.", "");
+    }
+
+    private boolean isLikelySameTitle(String expectedTitle, String actualTitle) {
+        return titleSimilarityScore(expectedTitle, actualTitle) >= 0.8;
+    }
+
+    private String normalizeTitle(String title) {
+        return title.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9\\s]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private String normalizeFileTitle(String fallbackTitle) {
+        if (!StringUtils.hasText(fallbackTitle)) {
+            return null;
+        }
+        return fallbackTitle
+                .replaceAll("(?i)\\.pdf$", "")
+                .replace('_', ' ')
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private double titleSimilarityScore(String expectedTitle, String actualTitle) {
+        if (!StringUtils.hasText(expectedTitle) || !StringUtils.hasText(actualTitle)) {
+            return 0.0;
+        }
+        String expected = normalizeTitle(expectedTitle);
+        String actual = normalizeTitle(actualTitle);
+        if (!StringUtils.hasText(expected) || !StringUtils.hasText(actual)) {
+            return 0.0;
+        }
+        if (expected.equals(actual)) {
+            return 1.0;
+        }
+        if (expected.contains(actual) || actual.contains(expected)) {
+            return 0.9;
+        }
+
+        Set<String> expectedTokens = new HashSet<>(Arrays.asList(expected.split(" ")));
+        Set<String> actualTokens = new HashSet<>(Arrays.asList(actual.split(" ")));
+        expectedTokens.removeIf(token -> token.length() < 2);
+        actualTokens.removeIf(token -> token.length() < 2);
+        if (expectedTokens.isEmpty() || actualTokens.isEmpty()) {
+            return 0.0;
+        }
+
+        Set<String> intersection = new HashSet<>(expectedTokens);
+        intersection.retainAll(actualTokens);
+        if (intersection.isEmpty()) {
+            return 0.0;
+        }
+        Set<String> union = new HashSet<>(expectedTokens);
+        union.addAll(actualTokens);
+        double jaccard = (double) intersection.size() / (double) union.size();
+        double bigramDice = bigramDiceScore(expected, actual);
+        return (jaccard * 0.4) + (bigramDice * 0.6);
+    }
+
+    private double bigramDiceScore(String a, String b) {
+        List<String> aWords = Arrays.asList(a.split(" "));
+        List<String> bWords = Arrays.asList(b.split(" "));
+        if (aWords.size() < 2 || bWords.size() < 2) {
+            return 0.0;
+        }
+        Set<String> aBigrams = new HashSet<>();
+        for (int i = 0; i < aWords.size() - 1; i++) {
+            aBigrams.add(aWords.get(i) + " " + aWords.get(i + 1));
+        }
+        Set<String> bBigrams = new HashSet<>();
+        for (int i = 0; i < bWords.size() - 1; i++) {
+            bBigrams.add(bWords.get(i) + " " + bWords.get(i + 1));
+        }
+        Set<String> overlap = new HashSet<>(aBigrams);
+        overlap.retainAll(bBigrams);
+        return (2.0 * overlap.size()) / (aBigrams.size() + bBigrams.size());
     }
 }
