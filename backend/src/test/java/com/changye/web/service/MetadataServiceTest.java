@@ -44,6 +44,9 @@ class MetadataServiceTest {
     @Mock
     private PaperRepository paperRepository;
 
+    @Mock
+    private PdfMetadataExtractorService pdfMetadataExtractorService;
+
     private MetadataService metadataService;
 
     @BeforeEach
@@ -51,7 +54,13 @@ class MetadataServiceTest {
         when(restTemplateBuilder.setConnectTimeout(any(Duration.class))).thenReturn(restTemplateBuilder);
         when(restTemplateBuilder.setReadTimeout(any(Duration.class))).thenReturn(restTemplateBuilder);
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
-        metadataService = new MetadataService(restTemplateBuilder, new ObjectMapper(), venueRankingService, paperRepository);
+        metadataService = new MetadataService(
+                restTemplateBuilder,
+                new ObjectMapper(),
+                venueRankingService,
+                paperRepository,
+                pdfMetadataExtractorService
+        );
     }
 
     @Test
@@ -59,7 +68,9 @@ class MetadataServiceTest {
         when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
                 .thenAnswer(invocation -> {
                     URI uri = invocation.getArgument(0);
-                    assertThat(uri.toString()).contains("query=Test%20Paper");
+                    String raw = uri.toString();
+                    assertThat(raw.contains("query=Test%20Paper") || raw.contains("query.title=Test%20Paper"))
+                            .isTrue();
                     throw new RestClientException("network unavailable");
                 });
 
