@@ -22,3 +22,7 @@ logging:
   level:
     com.changye.web: DEBUG
     org.springframework.web: DEBUG
+
+# Local dev should never write to /srv paths.
+repo:
+  base-workdir: ${REPO_BASE_WORKDIR:./data/repos}
